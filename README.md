@@ -16,6 +16,8 @@ Flaneur turns your markdown notes into pixel people walking through a city. When
 ## Install
 
 ```
+git clone https://github.com/m37daveking/flaneur.git
+cd flaneur
 pip install .
 ```
 
@@ -26,7 +28,7 @@ export ANTHROPIC_API_KEY=sk-ant-...
 flaneur walk
 ```
 
-Open `http://127.0.0.1:7773` — pick your notes folder in the browser and click **Let the notes out**.
+Open [http://127.0.0.1:7773](http://127.0.0.1:7773) — pick your notes folder in the browser and click **Let the notes out**.
 
 Or point it at a folder directly:
 
