@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flaneur</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <!-- Setup screen -->
+    <div id="setup-screen">
+        <div id="setup-box">
+            <h1>flaneur</h1>
+            <p class="setup-tagline">ideas meeting on the street</p>
+            <div class="setup-form">
+                <label for="folder-input">Notes folder</label>
+                <div class="folder-row">
+                    <input type="text" id="folder-input" placeholder="~/Documents/MyVault" spellcheck="false">
+                    <button type="button" id="btn-browse" class="browse-btn">Browse</button>
+                </div>
+                <button id="btn-start">Start walking</button>
+                <button id="btn-close-setup" class="close-setup-btn" type="button">Close</button>
+                <p id="setup-status" class="setup-status"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Intro overlay (shown over the scene) -->
+    <div id="intro-overlay" class="hidden">
+        <div id="intro-card">
+            <h1 class="intro-title">FLANEUR</h1>
+            <p class="intro-tagline">ideas meeting on the street</p>
+            <button id="btn-intro-start">Let the notes out</button>
+        </div>
+    </div>
+
+    <!-- Main app -->
+    <div id="app" class="hidden">
+        <canvas id="street-canvas"></canvas>
+        <div id="spark-overlay" class="spark-hidden">
+            <div id="spark-card">
+                <div class="spark-people">
+                    <span id="spark-name-a" class="spark-name-a"></span>
+                    <span class="spark-met">met</span>
+                    <span id="spark-name-b" class="spark-name-b"></span>
+                </div>
+                <h2 id="spark-title" class="spark-title"></h2>
+                <div id="spark-idea" class="spark-idea"></div>
+                <div class="spark-loading" id="spark-loading">thinking...</div>
+            </div>
+        </div>
+        <div id="controls">
+            <button id="btn-pause" title="Pause / Resume">&#9646;&#9646;</button>
+            <button id="btn-skip" title="Skip">&#9654;&#9654;</button>
+            <div id="speed-control">
+                <label for="speed">Crowd</label>
+                <input type="range" id="speed" min="5" max="40" value="15" step="1">
+            </div>
+            <button id="btn-change-folder" class="change-folder-btn">change folder</button>
+        </div>
+    </div>
+    <script src="/app.js"></script>
+</body>
+</html>
