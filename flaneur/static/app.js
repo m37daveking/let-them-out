@@ -861,6 +861,103 @@
       }
     }
 
+    function drawThoughtBubble(x, y, timer) {
+      const s = P;
+      // Animated dots leading up
+      const bob = Math.sin(timer * 0.08) * 2;
+      pxRect(x + s, y + s * 4 + bob, s * 1.5, s * 1.5, "rgba(255,255,255,0.7)");
+      pxRect(x - s, y + s * 2 + bob * 0.7, s * 2, s * 2, "rgba(255,255,255,0.8)");
+      // Main bubble
+      const bw = s * 8;
+      const bh = s * 5;
+      const bx = x - bw / 2;
+      const by = y - bh + bob * 0.5;
+      pxRect(bx + s, by, bw - s * 2, bh, "rgba(255,255,255,0.9)");
+      pxRect(bx, by + s, bw, bh - s * 2, "rgba(255,255,255,0.9)");
+      // Animated dots inside (thinking)
+      const dotPhase = Math.floor(timer * 0.06) % 3;
+      for (let i = 0; i < 3; i++) {
+        const alpha = i === dotPhase ? 1 : 0.3;
+        pxRect(bx + s * 2 + i * s * 2, by + bh / 2 - s * 0.5, s, s, `rgba(100,100,120,${alpha})`);
+      }
+    }
+
+    function drawSpeechBubble(x, y, title, idea) {
+      const s = P;
+      ctx.font = "bold 12px -apple-system, sans-serif";
+      const titleW = ctx.measureText(title).width;
+      ctx.font = "11px -apple-system, sans-serif";
+      const ideaW = ctx.measureText(idea).width;
+
+      const padding = 14;
+      const maxW = Math.min(320, W * 0.35);
+      const contentW = Math.min(Math.max(titleW, ideaW) + padding * 2, maxW);
+
+      // Word wrap the idea
+      const lines = wrapText(ctx, idea, contentW - padding * 2);
+      const lineH = 15;
+      const titleH = title ? 20 : 0;
+      const bh = padding * 2 + titleH + lines.length * lineH;
+      const bw = contentW;
+
+      // Position — clamp to screen
+      let bx = Math.max(10, Math.min(x - bw / 2, W - bw - 10));
+      let by = y - bh - s * 2;
+      if (by < 50) by = 50;
+
+      // Bubble body (pixel style)
+      pxRect(bx + s, by, bw - s * 2, bh, "#fff");
+      pxRect(bx, by + s, bw, bh - s * 2, "#fff");
+      // Corners
+      pxRect(bx + s, by + s, s, s, "#fff");
+      pxRect(bx + bw - s * 2, by + s, s, s, "#fff");
+
+      // Border
+      pxRect(bx + s, by, bw - s * 2, 1, "#ddd");
+      pxRect(bx + s, by + bh - 1, bw - s * 2, 1, "#ddd");
+      pxRect(bx, by + s, 1, bh - s * 2, "#ddd");
+      pxRect(bx + bw - 1, by + s, 1, bh - s * 2, "#ddd");
+
+      // Speech tail (pixel triangle pointing down)
+      const tailX = Math.max(bx + s * 4, Math.min(x, bx + bw - s * 4));
+      pxRect(tailX - s * 2, by + bh, s * 4, s, "#fff");
+      pxRect(tailX - s, by + bh + s, s * 2, s, "#fff");
+      pxRect(tailX - s * 0.5, by + bh + s * 2, s, s, "#fff");
+
+      // Title
+      if (title) {
+        ctx.font = "bold 12px -apple-system, sans-serif";
+        ctx.fillStyle = "#1a1a2e";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(title, bx + padding, by + padding);
+      }
+
+      // Idea lines
+      ctx.font = "11px -apple-system, sans-serif";
+      ctx.fillStyle = "#555";
+      for (let i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], bx + padding, by + padding + titleH + i * lineH);
+      }
+    }
+
+    function wrapText(ctx, text, maxWidth) {
+      const words = text.split(" ");
+      const lines = [];
+      let current = "";
+      for (const word of words) {
+        const test = current ? current + " " + word : word;
+        if (ctx.measureText(test).width > maxWidth && current) {
+          lines.push(current);
+          current = word;
+        } else {
+          current = test;
+        }
+      }
+      if (current) lines.push(current);
+      return lines;
+    }
+
     function drawNameTag(x, y, name, color) {
       ctx.font = "bold 11px -apple-system, sans-serif";
       const w = ctx.measureText(name).width + 14;
@@ -926,21 +1023,25 @@
       bumpPair = { a: bestA, b: bestB, phase: "approaching", timer: 0 };
     }
 
+    const CONVERSATIONAL_PREFIXES = [
+      "What if we ",
+      "How about this: ",
+      "I know! It's all about ",
+      "Hear me out... ",
+      "Picture this: ",
+      "OK so what if ",
+      "Wait. What about ",
+      "You know what would work? ",
+      "This is wild but... ",
+      "Think about it: ",
+    ];
+
     async function triggerSpark(a, b) {
       sparkPending = true;
 
+      // Hide the overlay card — we use speech bubbles now
       const overlay = document.getElementById("spark-overlay");
-      const loading = document.getElementById("spark-loading");
-      const ideaEl = document.getElementById("spark-idea");
-      const titleEl = document.getElementById("spark-title");
-
-      // Hide card completely while fetching
       overlay.className = "spark-hidden";
-      document.getElementById("spark-name-a").textContent = "";
-      document.getElementById("spark-name-b").textContent = "";
-      titleEl.textContent = "";
-      ideaEl.textContent = "";
-      loading.style.display = "block";
 
       try {
         const res = await fetch("/api/spark", {
@@ -949,17 +1050,19 @@
           body: JSON.stringify({ a: a.noteIdx, b: b.noteIdx }),
         });
         const data = await res.json();
-        loading.style.display = "none";
-        // Now show the card with the new content
-        document.getElementById("spark-name-a").textContent = truncate(a.title, 30);
-        document.getElementById("spark-name-b").textContent = truncate(b.title, 30);
-        titleEl.textContent = data.spark_title || "";
-        ideaEl.textContent = data.spark;
-        overlay.className = "spark-visible";
-        bumpPair.sparkText = data.spark;
+
+        // Pick a random conversational prefix
+        const prefix = CONVERSATIONAL_PREFIXES[Math.floor(Math.random() * CONVERSATIONAL_PREFIXES.length)];
+        // Lowercase the first char of the idea to flow with the prefix
+        const ideaText = data.spark.charAt(0).toLowerCase() + data.spark.slice(1);
+
+        bumpPair.sparkTitle = data.spark_title || "";
+        bumpPair.sparkText = prefix + ideaText;
+        bumpPair.speaker = Math.random() > 0.5 ? a : b;
       } catch (e) {
-        loading.style.display = "none";
-        ideaEl.textContent = "Two ideas collided, but the spark was too fast to catch.";
+        bumpPair.sparkText = "Hmm... that one got away from us.";
+        bumpPair.sparkTitle = "";
+        bumpPair.speaker = a;
       }
 
       sparkPending = false;
@@ -1059,18 +1162,23 @@
       // Pets
       drawPets();
 
-      // Spark pixels when talking
-      if (bumpPair && bumpPair.phase === "talking" && bumpPair.sparkText) {
-        const midX = (bumpPair.a.x + bumpPair.b.x) / 2;
-        const midY = bumpPair.a.y - PX * 4;
-        const t = bumpPair.timer;
-        const sparkColors = ["#FFD700", "#FF6B6B", "#FFE87C", "#FF8ED4", "#fff"];
-        for (let i = 0; i < 8; i++) {
-          const angle = (t * 0.04) + i * 0.785;
-          const radius = 10 + Math.sin(t * 0.06 + i) * 6;
-          const px = Math.floor(midX + Math.cos(angle) * radius);
-          const py = Math.floor(midY + Math.sin(angle) * radius - 14);
-          pxRect(px, py, P, P, sparkColors[i % sparkColors.length]);
+      // Thought bubbles while thinking, speech bubble when idea arrives
+      if (bumpPair && bumpPair.phase === "talking") {
+        const a = bumpPair.a;
+        const b = bumpPair.b;
+
+        if (!bumpPair.sparkText) {
+          // Still thinking — show thought bubbles above both people
+          drawThoughtBubble(a.x, a.y - PX * 10, bumpPair.timer);
+          drawThoughtBubble(b.x, b.y - PX * 10, bumpPair.timer + 30);
+        } else {
+          // Idea arrived — speech bubble from one person
+          const speaker = bumpPair.speaker || a;
+          drawSpeechBubble(
+            speaker.x, speaker.y - PX * 10,
+            bumpPair.sparkTitle || "",
+            bumpPair.sparkText
+          );
         }
       }
     }
