@@ -217,4 +217,123 @@ def create_app(vault_path: Path | None = None) -> Flask:
             "note_b": {"id": id_b, "title": note_b["title"]},
         })
 
+    @app.route("/api/spark-evolve", methods=["POST"])
+    def spark_evolve():
+        """Generate an evolved idea building on previous sparks."""
+        vp = state["vault_path"]
+        if not vp:
+            return jsonify({"error": "No vault loaded"}), 400
+
+        body = request.get_json()
+        id_a = body.get("a")
+        id_b = body.get("b")
+        context = body.get("context", {})
+        scene = context.get("scene", "party")
+
+        data = load_index(vp)
+        if id_a is None or id_b is None:
+            return jsonify({"error": "Need two note IDs"}), 400
+
+        note_a = data["notes"][id_a]
+        note_b = data["notes"][id_b]
+
+        content_a = note_a["preview"]
+        content_b = note_b["preview"]
+        path_a = vp / note_a["path"]
+        path_b = vp / note_b["path"]
+        if path_a.exists():
+            content_a = path_a.read_text(encoding="utf-8", errors="replace")[:2000]
+        if path_b.exists():
+            content_b = path_b.read_text(encoding="utf-8", errors="replace")[:2000]
+
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        client = anthropic.Anthropic(api_key=api_key)
+
+        if scene == "party":
+            system_prompt = (
+                "Two ideas that were born on the street are now colliding at a party. "
+                "Each idea already evolved from raw notes into a spark. Now they meet.\n\n"
+                "Your job: FUSE these two street spark ideas into something new. "
+                "The original notes are background context. The street sparks are the "
+                "primary material. Find the meta-pattern that connects the two sparks "
+                "and push it somewhere neither idea could go alone.\n\n"
+                "Rules:\n"
+                "- The street spark ideas are the stars — fuse THEM, not the original notes\n"
+                "- Find what the two sparks have in common at a deeper level\n"
+                "- Push further than either spark went alone\n"
+                "- Think like a venture capitalist hearing two pitches and seeing the bigger play\n\n"
+                "Respond in EXACTLY this format:\n"
+                "TITLE: [product name or book title. 3-6 words. Billboard-ready.]\n"
+                "IDEA: [ONE punchy sentence. Under 15 words. A tagline.]\n"
+                "No other text."
+            )
+            max_tok = 250
+
+            # Build user message with street spark context
+            a_spark = context.get("a_street_spark", {})
+            b_spark = context.get("b_street_spark", {})
+            user_msg = (
+                f"Person A: \"{note_a['title']}\"\n{content_a[:600]}\n"
+                f"Their street spark: \"{a_spark.get('title', '')}\": {a_spark.get('text', '')}\n\n"
+                f"Person B: \"{note_b['title']}\"\n{content_b[:600]}\n"
+                f"Their street spark: \"{b_spark.get('title', '')}\": {b_spark.get('text', '')}\n\n"
+                "What evolved idea emerges when these two sparks collide at the party?"
+            )
+        else:  # coffee
+            system_prompt = (
+                "This is a third-generation idea. Two people have been through "
+                "street collisions and party conversations. Now in an intimate "
+                "coffee meeting, distill EVERYTHING into one crystallized insight.\n\n"
+                "You are given their full lineage: original notes, street sparks, "
+                "and party sparks. The coffee idea should feel like the inevitable "
+                "conclusion — the idea that was always there, waiting to be found.\n\n"
+                "Rules:\n"
+                "- This is the refined, final form — not another iteration\n"
+                "- It must honour the full journey from street to party to here\n"
+                "- Make it specific enough to act on\n"
+                "- This should feel like a breakthrough, not a summary\n\n"
+                "Respond in EXACTLY this format:\n"
+                "TITLE: [product name or book title. 3-6 words. The kind of name that makes people lean in.]\n"
+                "IDEA: [2-3 sentences. This is the big one — make it count. Specific and actionable.]\n"
+                "No other text."
+            )
+            max_tok = 500
+
+            a_spark = context.get("a_street_spark", {})
+            b_spark = context.get("b_street_spark", {})
+            a_party = context.get("a_party_spark", {})
+            b_party = context.get("b_party_spark", {})
+            user_msg = (
+                f"Person A: \"{note_a['title']}\"\n{content_a[:400]}\n"
+                f"Street spark: \"{a_spark.get('title', '')}\": {a_spark.get('text', '')}\n"
+                f"Party spark: \"{a_party.get('title', '')}\": {a_party.get('text', '')}\n\n"
+                f"Person B: \"{note_b['title']}\"\n{content_b[:400]}\n"
+                f"Street spark: \"{b_spark.get('title', '')}\": {b_spark.get('text', '')}\n"
+                f"Party spark: \"{b_party.get('title', '')}\": {b_party.get('text', '')}\n\n"
+                "Over coffee, what final crystallized idea emerges from this entire journey?"
+            )
+
+        response = client.messages.create(
+            model="claude-opus-4-6",
+            max_tokens=max_tok,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_msg}],
+        )
+
+        raw = response.content[0].text.strip()
+        spark_title = ""
+        spark_text = raw
+        for line in raw.splitlines():
+            if line.upper().startswith("TITLE:"):
+                spark_title = line.split(":", 1)[1].strip()
+            elif line.upper().startswith("IDEA:"):
+                spark_text = line.split(":", 1)[1].strip()
+
+        return jsonify({
+            "spark_title": spark_title,
+            "spark": spark_text,
+            "note_a": {"id": id_a, "title": note_a["title"]},
+            "note_b": {"id": id_b, "title": note_b["title"]},
+        })
+
     return app

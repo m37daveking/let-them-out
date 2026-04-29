@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "flaneur"
 version = "0.1.0"
-description = "Take a walk through your notes. Discover surprising connections."
+description = "Let your notes out. Discover surprising connections."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"

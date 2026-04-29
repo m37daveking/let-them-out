@@ -375,3 +375,85 @@ body {
 .change-folder-btn {
     display: none;
 }
+
+.scene-btn {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.scene-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Coffee result overlay */
+#coffee-result {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+}
+
+#coffee-card {
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid rgba(0, 0, 0, 0.08);
+    padding: 40px 48px;
+    max-width: 560px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+
+.coffee-label {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #999;
+    margin-bottom: 12px;
+}
+
+#coffee-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 12px;
+}
+
+#coffee-idea {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #444;
+    margin-bottom: 24px;
+}
+
+.coffee-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.coffee-actions button {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #555;
+    transition: all 0.2s;
+}
+
+.coffee-actions button:hover {
+    border-color: #999;
+    color: #1a1a2e;
+}

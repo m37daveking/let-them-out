@@ -1,4 +1,4 @@
-// Flaneur — ideas meeting on the street
+// Let Them Out — your notes, set free
 
 (function () {
   const setupScreen = document.getElementById("setup-screen");
@@ -6,7 +6,6 @@
   const btnStart = document.getElementById("btn-start");
   const setupStatus = document.getElementById("setup-status");
   const folderInput = document.getElementById("folder-input");
-  const apikeyInput = document.getElementById("apikey-input");
   const btnChangeFolder = document.getElementById("btn-change-folder");
   const btnCloseSetup = document.getElementById("btn-close-setup");
   const introOverlay = document.getElementById("intro-overlay");
@@ -15,11 +14,7 @@
   checkStatus();
 
   async function checkStatus() {
-    try {
-      const res = await fetch("/api/status");
-      const data = await res.json();
-      if (data.ready) showIntro();
-    } catch (e) {}
+    // Always show setup screen — user picks the folder each time
   }
 
   function showIntro() {
@@ -58,7 +53,7 @@
       const res = await fetch("/api/setup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ folder, api_key: apikeyInput.value.trim() }),
+        body: JSON.stringify({ folder }),
       });
       const data = await res.json();
       if (!res.ok) { showStatus(data.error, true); btnStart.disabled = false; return; }
@@ -109,15 +104,49 @@
   ];
 
   let cleanup = null;
-
   let resumeWalk = null;
 
+  // --- Global state across scenes ---
+  let flaneurState = {
+    currentScene: "street",
+    notes: [],
+    partyGuests: [],   // {noteIdx, title, palette, streetSpark: {title, text}}
+    coffeeGuests: [],  // same + partySpark
+  };
+
+  function updatePartyButton() {
+    const btn = document.getElementById("btn-party");
+    const n = flaneurState.partyGuests.length;
+    btn.textContent = `Party (${n})`;
+    btn.disabled = n < 3;
+  }
+
+  function updateCoffeeButton() {
+    const btn = document.getElementById("btn-coffee");
+    const n = flaneurState.coffeeGuests.length;
+    btn.textContent = `Coffee (${n}/2)`;
+    btn.disabled = n < 2;
+  }
+
   async function launchStreet(startPaused) {
+    flaneurState.currentScene = "street";
     setupScreen.classList.add("hidden");
     appScreen.classList.remove("hidden");
 
-    const res = await fetch("/api/notes");
-    const { notes } = await res.json();
+    // Show/hide scene buttons
+    document.getElementById("btn-party").classList.remove("hidden");
+    document.getElementById("btn-coffee").classList.add("hidden");
+    document.getElementById("btn-back-street").classList.add("hidden");
+    document.getElementById("speed-control").classList.remove("hidden");
+    updatePartyButton();
+
+    // Fetch notes once
+    if (flaneurState.notes.length === 0) {
+      const res = await fetch("/api/notes");
+      const { notes } = await res.json();
+      flaneurState.notes = notes;
+    }
+    const notes = flaneurState.notes;
     if (notes.length === 0) return;
 
     const canvas = document.getElementById("street-canvas");
@@ -487,7 +516,7 @@
       pxRect(0, stripeY, W, stripeH, "rgba(30,50,100,0.25)");
       pxRect(0, stripeY + stripeH, W, s, "rgba(30,50,100,0.1)");
 
-      // FLANEUR title
+      // LET THEM OUT title
       ctx.font = "bold 32px 'Courier New', monospace";
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
@@ -496,19 +525,19 @@
 
       // Shadow
       ctx.fillStyle = "rgba(0,0,0,0.2)";
-      ctx.fillText("FLANEUR", tx + 2, ty + 2);
+      ctx.fillText("LET THEM OUT", tx + 2, ty + 2);
       // Text
       ctx.fillStyle = "#fff";
-      ctx.fillText("FLANEUR", tx, ty);
+      ctx.fillText("LET THEM OUT", tx, ty);
 
       // Tagline
       ctx.font = "11px 'Courier New', monospace";
       ctx.fillStyle = "rgba(255,255,255,0.7)";
-      const tagX = tx + ctx.measureText("FLANEUR").width + 20;
+      const tagX = tx + ctx.measureText("LET THEM OUT").width + 20;
       ctx.font = "bold 32px 'Courier New', monospace";
-      const flaneurW = ctx.measureText("FLANEUR").width;
+      const titleW = ctx.measureText("LET THEM OUT").width;
       ctx.font = "11px 'Courier New', monospace";
-      ctx.fillText("ideas meeting on the street", tx + flaneurW + 20, ty);
+      ctx.fillText("your notes, set free", tx + titleW + 20, ty);
 
       // Change folder button (top right, pixel style)
       const btnText = "CHANGE FOLDER";
@@ -882,7 +911,7 @@
       }
     }
 
-    function drawSpeechBubble(x, y, title, idea) {
+    function drawSpeechBubble(x, y, title, idea, inviteLabel, tailAx, tailBx, tailY) {
       const s = P;
       ctx.font = "bold 12px -apple-system, sans-serif";
       const titleW = ctx.measureText(title).width;
@@ -918,11 +947,30 @@
       pxRect(bx, by + s, 1, bh - s * 2, "#ddd");
       pxRect(bx + bw - 1, by + s, 1, bh - s * 2, "#ddd");
 
-      // Speech tail (pixel triangle pointing down)
-      const tailX = Math.max(bx + s * 4, Math.min(x, bx + bw - s * 4));
-      pxRect(tailX - s * 2, by + bh, s * 4, s, "#fff");
-      pxRect(tailX - s, by + bh + s, s * 2, s, "#fff");
-      pxRect(tailX - s * 0.5, by + bh + s * 2, s, s, "#fff");
+      // Speech tails pointing to both people
+      if (tailAx != null && tailBx != null) {
+        const tA = Math.max(bx + s * 2, Math.min(tailAx, bx + bw / 2 - s * 3));
+        const tB = Math.max(bx + bw / 2 + s * 3, Math.min(tailBx, bx + bw - s * 2));
+        // Left tail (person A)
+        pxRect(tA - s * 1.5, by + bh, s * 3, s, "#fff");
+        pxRect(tA - s, by + bh + s, s * 2, s, "#fff");
+        pxRect(tA - s * 0.5, by + bh + s * 2, s * 1.5, s, "#fff");
+        pxRect(tA, by + bh + s * 3, s, s, "#fff");
+        pxRect(tA, by + bh + s * 4, s * 0.5, s, "#fff");
+        pxRect(tA + s * 0.25, by + bh + s * 5, s * 0.5, s, "#fff");
+        // Right tail (person B)
+        pxRect(tB - s * 1.5, by + bh, s * 3, s, "#fff");
+        pxRect(tB - s, by + bh + s, s * 2, s, "#fff");
+        pxRect(tB - s * 0.5, by + bh + s * 2, s * 1.5, s, "#fff");
+        pxRect(tB, by + bh + s * 3, s, s, "#fff");
+        pxRect(tB, by + bh + s * 4, s * 0.5, s, "#fff");
+        pxRect(tB + s * 0.25, by + bh + s * 5, s * 0.5, s, "#fff");
+      } else {
+        const tailX = Math.max(bx + s * 4, Math.min(x, bx + bw - s * 4));
+        pxRect(tailX - s * 2, by + bh, s * 4, s, "#fff");
+        pxRect(tailX - s, by + bh + s, s * 2, s, "#fff");
+        pxRect(tailX - s * 0.5, by + bh + s * 2, s, s, "#fff");
+      }
 
       // Title
       if (title) {
@@ -938,6 +986,27 @@
       ctx.fillStyle = "#555";
       for (let i = 0; i < lines.length; i++) {
         ctx.fillText(lines[i], bx + padding, by + padding + titleH + i * lineH);
+      }
+
+      // Invite button — positioned below the text
+      if (inviteLabel) {
+        ctx.font = "bold 9px 'Courier New', monospace";
+        const ibText = inviteLabel;
+        const ibW = ctx.measureText(ibText).width + 16;
+        const ibH = 20;
+        const textBottom = by + padding + titleH + lines.length * lineH + 6;
+        const ibX = bx + (bw - ibW) / 2;
+        const ibY = textBottom;
+
+        pxRect(ibX, ibY, ibW, ibH, "#2563eb");
+        ctx.fillStyle = "#fff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(ibText, ibX + ibW / 2, ibY + ibH / 2);
+
+        drawSpeechBubble._inviteBounds = { x: ibX, y: ibY, w: ibW, h: ibH };
+      } else {
+        drawSpeechBubble._inviteBounds = null;
       }
     }
 
@@ -1002,20 +1071,18 @@
       }
 
       if (!bestA || !bestB) {
-        // Force a bump: pick two on-screen people and steer them toward each other
-        const picked = shuffle(candidates).slice(0, 2);
+        // Force a bump: find two visible people and steer them at each other fast
+        const visible = candidates.filter(p => p.x > 30 && p.x < W - 30);
+        const picked = shuffle(visible.length >= 2 ? visible : candidates).slice(0, 2);
         if (picked.length < 2) return;
         const [a, b] = picked;
-        // Point them at each other from wherever they are
         a.dir = b.x > a.x ? 1 : -1;
         b.dir = a.x > b.x ? 1 : -1;
-        // Bring their Y lanes together gradually
         const midY = (a.y + b.y) / 2;
-        a.y += (midY - a.y) * 0.3;
-        b.y += (midY - b.y) * 0.3;
-        // Speed them up a little so they meet sooner
-        a.speed = Math.max(a.speed, 0.6);
-        b.speed = Math.max(b.speed, 0.6);
+        a.y = midY;
+        b.y = midY;
+        a.speed = 1.2;
+        b.speed = 1.2;
         bestA = a;
         bestB = b;
       }
@@ -1070,8 +1137,8 @@
 
     // --- Update loop ---
 
-    let bumpCooldown = 120; // first bump after ~2s
-    const BUMP_INTERVAL = 300; // frames between bumps (~5s)
+    let bumpCooldown = 60; // first bump after ~1s
+    const BUMP_INTERVAL = 120; // frames between bumps (~2s)
 
     function update() {
       for (const p of people) {
@@ -1174,10 +1241,15 @@
         } else {
           // Idea arrived — speech bubble from one person
           const speaker = bumpPair.speaker || a;
+          const inviteLabel = flaneurState.currentScene === "street" ? "INVITE TO PARTY"
+            : flaneurState.currentScene === "party" ? "INVITE TO COFFEE" : null;
+          const midX = (a.x + b.x) / 2;
           drawSpeechBubble(
-            speaker.x, speaker.y - PX * 10,
+            midX, Math.min(a.y, b.y) - PX * 40,
             bumpPair.sparkTitle || "",
-            bumpPair.sparkText
+            bumpPair.sparkText,
+            bumpPair.invited ? null : inviteLabel,
+            a.x, b.x, Math.min(a.y, b.y) - PX * 6
           );
         }
       }
@@ -1219,18 +1291,883 @@
       btnSkip.removeEventListener("click", onSkip);
     };
 
-    // Canvas click handler for pixel button
+    // Canvas click handler
     canvas.addEventListener("click", (e) => {
       const rect = canvas.getBoundingClientRect();
       const mx = (e.clientX - rect.left) * (canvas.width / rect.width / (window.devicePixelRatio || 1));
       const my = (e.clientY - rect.top) * (canvas.height / rect.height / (window.devicePixelRatio || 1));
+
+      // Change folder button
       const b = drawTitle._btnBounds;
       if (b && mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h) {
         showSetup();
+        return;
+      }
+
+      // Invite button in speech bubble
+      const ib = drawSpeechBubble._inviteBounds;
+      if (ib && mx >= ib.x && mx <= ib.x + ib.w && my >= ib.y && my <= ib.y + ib.h && bumpPair && bumpPair.sparkText) {
+        if (flaneurState.currentScene === "street") {
+          // Invite both people to the party
+          const a = bumpPair.a;
+          const b2 = bumpPair.b;
+          const spark = { title: bumpPair.sparkTitle, text: bumpPair.sparkText };
+          const already = new Set(flaneurState.partyGuests.map(g => g.noteIdx));
+          if (!already.has(a.noteIdx)) {
+            flaneurState.partyGuests.push({
+              noteIdx: a.noteIdx, title: a.title, palette: a.palette, streetSpark: spark
+            });
+          }
+          if (!already.has(b2.noteIdx)) {
+            flaneurState.partyGuests.push({
+              noteIdx: b2.noteIdx, title: b2.title, palette: b2.palette, streetSpark: spark
+            });
+          }
+          bumpPair.invited = true;
+          bumpPair.timer = 800; // dismiss quickly
+          updatePartyButton();
+        } else if (flaneurState.currentScene === "party" && flaneurState.coffeeGuests.length < 2) {
+          const a = bumpPair.a;
+          const b2 = bumpPair.b;
+          const spark = { title: bumpPair.sparkTitle, text: bumpPair.sparkText };
+          const already = new Set(flaneurState.coffeeGuests.map(g => g.noteIdx));
+          if (!already.has(a.noteIdx) && flaneurState.coffeeGuests.length < 2) {
+            const guest = flaneurState.partyGuests.find(g => g.noteIdx === a.noteIdx) || { noteIdx: a.noteIdx, title: a.title, palette: a.palette, streetSpark: {} };
+            flaneurState.coffeeGuests.push({ ...guest, partySpark: spark });
+          }
+          if (!already.has(b2.noteIdx) && flaneurState.coffeeGuests.length < 2) {
+            const guest = flaneurState.partyGuests.find(g => g.noteIdx === b2.noteIdx) || { noteIdx: b2.noteIdx, title: b2.title, palette: b2.palette, streetSpark: {} };
+            flaneurState.coffeeGuests.push({ ...guest, partySpark: spark });
+          }
+          bumpPair.invited = true;
+          bumpPair.timer = 800; // dismiss quickly
+          updateCoffeeButton();
+        }
+        drawSpeechBubble._inviteBounds = null;
       }
     });
 
     // Go
+    loop();
+  }
+
+  // --- Party button handler ---
+  document.getElementById("btn-party").addEventListener("click", () => {
+    if (flaneurState.partyGuests.length < 3) return;
+    if (cleanup) cleanup();
+    launchParty();
+  });
+
+  // --- Coffee button handler ---
+  document.getElementById("btn-coffee").addEventListener("click", () => {
+    if (flaneurState.coffeeGuests.length < 2) return;
+    if (cleanup) cleanup();
+    launchCoffee();
+  });
+
+  // --- Back to street ---
+  document.getElementById("btn-back-street").addEventListener("click", () => {
+    if (cleanup) cleanup();
+    flaneurState.partyGuests = [];
+    flaneurState.coffeeGuests = [];
+    document.getElementById("coffee-result").classList.add("hidden");
+    launchStreet();
+  });
+
+  document.getElementById("btn-coffee-done").addEventListener("click", () => {
+    if (cleanup) cleanup();
+    flaneurState.partyGuests = [];
+    flaneurState.coffeeGuests = [];
+    document.getElementById("coffee-result").classList.add("hidden");
+    launchStreet();
+  });
+
+  document.getElementById("btn-copy-idea").addEventListener("click", () => {
+    const title = document.getElementById("coffee-title").textContent;
+    const idea = document.getElementById("coffee-idea").textContent;
+    navigator.clipboard.writeText(`${title}\n\n${idea}`);
+    document.getElementById("btn-copy-idea").textContent = "Copied!";
+    setTimeout(() => { document.getElementById("btn-copy-idea").textContent = "Copy idea"; }, 2000);
+  });
+
+  // =============================================
+  // PARTY SCENE
+  // =============================================
+  async function launchParty() {
+    flaneurState.currentScene = "party";
+
+    // Show/hide buttons
+    document.getElementById("btn-party").classList.add("hidden");
+    document.getElementById("btn-coffee").classList.remove("hidden");
+    document.getElementById("btn-back-street").classList.remove("hidden");
+    document.getElementById("speed-control").classList.add("hidden");
+    updateCoffeeButton();
+
+    const notes = flaneurState.notes;
+    const canvas = document.getElementById("street-canvas");
+    const dpr = window.devicePixelRatio || 1;
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+
+    const PX = 3;
+    const P = 4;
+
+    // Room bounds
+    const FLOOR_Y = H * 0.55;
+    const FLOOR_BOTTOM = H * 0.85;
+    const WALL_LEFT = W * 0.05;
+    const WALL_RIGHT = W * 0.95;
+
+    function pxRect(x, y, w, h, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(Math.floor(x), Math.floor(y), Math.ceil(w), Math.ceil(h));
+    }
+
+    function makeSeeded(s) {
+      return () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+    }
+
+    // Create people from party guests — their identity is now their street spark idea
+    let people = flaneurState.partyGuests.map((guest, i) => ({
+      noteIdx: guest.noteIdx,
+      title: guest.streetSpark ? guest.streetSpark.title : guest.title,
+      originalTitle: guest.title,
+      palette: guest.palette,
+      streetSpark: guest.streetSpark,
+      x: WALL_LEFT + Math.random() * (WALL_RIGHT - WALL_LEFT),
+      y: FLOOR_Y + Math.random() * (FLOOR_BOTTOM - FLOOR_Y),
+      targetX: 0,
+      targetY: 0,
+      speed: 0.3 + Math.random() * 0.3,
+      dir: 1,
+      frame: Math.floor(Math.random() * 100),
+      stopped: false,
+      pauseTimer: 0,
+    }));
+
+    // Give each a random target
+    for (const p of people) {
+      p.targetX = WALL_LEFT + 40 + Math.random() * (WALL_RIGHT - WALL_LEFT - 80);
+      p.targetY = FLOOR_Y + 10 + Math.random() * (FLOOR_BOTTOM - FLOOR_Y - 20);
+    }
+
+    let paused = false;
+    let animFrame;
+    let bumpPair = null;
+    let sparkPending = false;
+    let bumpCooldown = 90;
+    const BUMP_INTERVAL = 150;
+
+    const CONVERSATIONAL_PREFIXES = [
+      "Building on that... ",
+      "OK but what if we take it further: ",
+      "That reminds me — ",
+      "Yes! And also: ",
+      "Wait I just connected something: ",
+      "This changes everything: ",
+    ];
+
+    // --- Party drawing ---
+
+    function drawRoom() {
+      const s = P;
+
+      // Ceiling / upper wall
+      pxRect(0, 0, W, FLOOR_Y, "#2A1F1A");
+      // Wall texture (warm dark)
+      const rand = makeSeeded(50);
+      for (let i = 0; i < 60; i++) {
+        const wx = Math.floor(rand() * W / s) * s;
+        const wy = Math.floor(rand() * FLOOR_Y / s) * s;
+        pxRect(wx, wy, s, s, rand() > 0.5 ? "#2E2218" : "#26191A");
+      }
+
+      // Floor (hardwood)
+      pxRect(0, FLOOR_Y, W, H - FLOOR_Y, "#4A3520");
+      // Floor planks
+      for (let fy = FLOOR_Y; fy < H; fy += s * 3) {
+        pxRect(0, fy, W, 1, "#3A2510");
+      }
+      const rand2 = makeSeeded(60);
+      for (let i = 0; i < 80; i++) {
+        const fx = Math.floor(rand2() * W / s) * s;
+        const fy = FLOOR_Y + Math.floor(rand2() * ((H - FLOOR_Y) / s)) * s;
+        pxRect(fx, fy, s, s, rand2() > 0.5 ? "#503A25" : "#443020");
+      }
+
+      // Rug in centre
+      const rugX = W * 0.3, rugY = FLOOR_Y + (FLOOR_BOTTOM - FLOOR_Y) * 0.3;
+      const rugW = W * 0.4, rugH = (FLOOR_BOTTOM - FLOOR_Y) * 0.5;
+      pxRect(rugX, rugY, rugW, rugH, "#8B2020");
+      pxRect(rugX + s * 2, rugY + s * 2, rugW - s * 4, rugH - s * 4, "#9B3030");
+      pxRect(rugX + s * 4, rugY + s * 4, rugW - s * 8, rugH - s * 8, "#8B2020");
+
+      // Window showing skyline
+      const winX = W * 0.6, winY = H * 0.05, winW = W * 0.3, winH = FLOOR_Y * 0.7;
+      // Window frame
+      pxRect(winX - s, winY - s, winW + s * 2, winH + s * 2, "#3A2A1A");
+      // Night sky through window
+      pxRect(winX, winY, winW, winH, "#0A0A1E");
+      // Stars
+      const rand3 = makeSeeded(13);
+      for (let i = 0; i < 15; i++) {
+        pxRect(winX + rand3() * winW, winY + rand3() * winH * 0.6, s * 0.5, s * 0.5, "#fff");
+      }
+      // Skyline through window
+      const rand4 = makeSeeded(27);
+      for (let i = 0; i < 8; i++) {
+        const bx = winX + rand4() * (winW - s * 4);
+        const bh = s * 4 + rand4() * s * 10;
+        const bw = s * 2 + rand4() * s * 3;
+        pxRect(bx, winY + winH - bh, bw, bh, "#151530");
+        // Lit windows
+        for (let wy = winY + winH - bh + s; wy < winY + winH - s; wy += s * 2) {
+          if (rand4() > 0.5) pxRect(bx + s * 0.5, wy, s, s, "#F0C040");
+        }
+      }
+      // Window cross bar
+      pxRect(winX + winW / 2 - 1, winY, 2, winH, "#3A2A1A");
+      pxRect(winX, winY + winH / 2 - 1, winW, 2, "#3A2A1A");
+
+      // Lamps (warm glow)
+      const lampPositions = [W * 0.15, W * 0.5, W * 0.85];
+      for (const lx of lampPositions) {
+        // Wall bracket
+        pxRect(lx - s, H * 0.15, s * 2, s * 6, "#5A4A3A");
+        // Shade
+        pxRect(lx - s * 3, H * 0.12, s * 6, s * 3, "#D4A050");
+        // Glow
+        pxRect(lx - s * 8, H * 0.15, s * 16, s * 12, "rgba(255,200,100,0.04)");
+        pxRect(lx - s * 4, H * 0.14, s * 8, s * 6, "rgba(255,200,100,0.06)");
+      }
+
+      // Record player (bottom left)
+      const rpX = W * 0.08, rpY = FLOOR_Y - s * 2;
+      // Table
+      pxRect(rpX, rpY, s * 12, s * 2, "#5A4030");
+      pxRect(rpX + s * 2, rpY + s * 2, s, s * 6, "#4A3020");
+      pxRect(rpX + s * 9, rpY + s * 2, s, s * 6, "#4A3020");
+      // Record player body
+      pxRect(rpX + s, rpY - s * 3, s * 10, s * 3, "#2A2A2A");
+      // Record (circle as pixel square)
+      pxRect(rpX + s * 3, rpY - s * 2.5, s * 5, s * 2, "#111");
+      pxRect(rpX + s * 5, rpY - s * 2, s, s, "#C0392B"); // label
+      // Tonearm
+      pxRect(rpX + s * 9, rpY - s * 3, s, s * 2, "#888");
+      pxRect(rpX + s * 7, rpY - s * 3, s * 3, s * 0.5, "#888");
+
+      // Framed art on wall
+      pxRect(W * 0.3, H * 0.08, s * 10, s * 8, "#3A2A1A");
+      pxRect(W * 0.3 + s, H * 0.08 + s, s * 8, s * 6, "#445566");
+    }
+
+    function drawPartyTitle() {
+      if (!introOverlay.classList.contains("hidden")) return;
+      const s = P;
+      pxRect(0, s * 2, W, s * 10, "rgba(0,0,0,0.3)");
+      ctx.font = "bold 32px 'Courier New', monospace";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "rgba(0,0,0,0.3)";
+      ctx.fillText("THE PARTY", s * 6 + 2, s * 7 + 2);
+      ctx.fillStyle = "#F0C040";
+      ctx.fillText("THE PARTY", s * 6, s * 7);
+      ctx.font = "11px 'Courier New', monospace";
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.fillText("ideas evolving", s * 6 + ctx.measureText("THE PARTY").width + 20, s * 7);
+    }
+
+    // Reuse drawing functions
+    function drawPerson(p) {
+      const { x, y, palette, dir, frame, stopped } = p;
+      const s = PX;
+      const walk = stopped ? 0 : Math.sin(frame * 0.15);
+      pxRect(x - 2 * s, y + 10 * s, 6 * s, s, "rgba(0,0,0,0.12)");
+      const legL = stopped ? 0 : walk * s * 1.2;
+      const legR = stopped ? 0 : -walk * s * 1.2;
+      pxRect(x - 1 * s, y + 6 * s, s * 1.5, s * 4, palette.pants);
+      pxRect(x + 1.5 * s, y + 6 * s, s * 1.5, s * 4, palette.pants);
+      pxRect(x - 1.5 * s + legL, y + 9.5 * s, s * 2.5, s, "#333");
+      pxRect(x + 1 * s + legR, y + 9.5 * s, s * 2.5, s, "#333");
+      pxRect(x - 2 * s, y + 2 * s, s * 6, s * 4.5, palette.shirt);
+      const armSwing = stopped ? 0 : walk * s;
+      pxRect(x - 3.5 * s, y + 2 * s + armSwing, s * 1.5, s * 3.5, palette.shirt);
+      pxRect(x + 4 * s, y + 2 * s - armSwing, s * 1.5, s * 3.5, palette.shirt);
+      pxRect(x - 3.5 * s, y + 5 * s + armSwing, s * 1.5, s, palette.skin);
+      pxRect(x + 4 * s, y + 5 * s - armSwing, s * 1.5, s, palette.skin);
+      pxRect(x, y + 0.5 * s, s * 2, s * 2, palette.skin);
+      pxRect(x - 1.5 * s, y - 4 * s, s * 5, s * 5, palette.skin);
+      pxRect(x - 1.5 * s, y - 5 * s, s * 5, s * 2.5, palette.hair);
+      if (dir > 0) pxRect(x - 1.5 * s, y - 4 * s, s, s * 3, palette.hair);
+      else pxRect(x + 2.5 * s, y - 4 * s, s, s * 3, palette.hair);
+      if (dir > 0) {
+        pxRect(x + 1 * s, y - 2 * s, s, s, "#1a1a2e");
+        pxRect(x + 2.5 * s, y - 2 * s, s, s, "#1a1a2e");
+      } else {
+        pxRect(x - 0.5 * s, y - 2 * s, s, s, "#1a1a2e");
+        pxRect(x + 1 * s, y - 2 * s, s, s, "#1a1a2e");
+      }
+    }
+
+    function drawNameTag(x, y, name, color) {
+      ctx.font = "bold 11px -apple-system, sans-serif";
+      const w = ctx.measureText(name).width + 14;
+      const h = 22;
+      const tx = x - w / 2 + PX;
+      const ty = y - PX * 8;
+      pxRect(tx, ty, w, h, "rgba(0,0,0,0.5)");
+      ctx.fillStyle = color || "rgba(255,255,200,0.8)";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(name, x + PX, ty + h / 2);
+    }
+
+    function drawThoughtBubble(x, y, timer) {
+      const s = P;
+      const bob = Math.sin(timer * 0.08) * 2;
+      pxRect(x + s, y + s * 4 + bob, s * 1.5, s * 1.5, "rgba(255,255,255,0.5)");
+      pxRect(x - s, y + s * 2 + bob * 0.7, s * 2, s * 2, "rgba(255,255,255,0.6)");
+      const bw = s * 8, bh = s * 5;
+      const bx = x - bw / 2, by = y - bh + bob * 0.5;
+      pxRect(bx + s, by, bw - s * 2, bh, "rgba(255,255,255,0.7)");
+      pxRect(bx, by + s, bw, bh - s * 2, "rgba(255,255,255,0.7)");
+      const dotPhase = Math.floor(timer * 0.06) % 3;
+      for (let i = 0; i < 3; i++) {
+        const alpha = i === dotPhase ? 1 : 0.3;
+        pxRect(bx + s * 2 + i * s * 2, by + bh / 2 - s * 0.5, s, s, `rgba(100,100,120,${alpha})`);
+      }
+    }
+
+    function drawSpeechBubble(x, y, title, idea, inviteLabel, tailAx, tailBx, tailY) {
+      const s = P;
+      ctx.font = "bold 12px -apple-system, sans-serif";
+      const titleW = ctx.measureText(title).width;
+      ctx.font = "11px -apple-system, sans-serif";
+      const ideaW = ctx.measureText(idea).width;
+      const padding = 14;
+      const maxW = Math.min(320, W * 0.35);
+      const contentW = Math.min(Math.max(titleW, ideaW) + padding * 2, maxW);
+      const lines = wrapText(ctx, idea, contentW - padding * 2);
+      const lineH = 15;
+      const titleH = title ? 20 : 0;
+      const bh = padding * 2 + titleH + lines.length * lineH + (inviteLabel ? 26 : 0);
+      const bw = contentW;
+      let bx = Math.max(10, Math.min(x - bw / 2, W - bw - 10));
+      let by = y - bh - s * 2;
+      if (by < 50) by = 50;
+      pxRect(bx + s, by, bw - s * 2, bh, "#fff");
+      pxRect(bx, by + s, bw, bh - s * 2, "#fff");
+      pxRect(bx + s, by, bw - s * 2, 1, "#ddd");
+      pxRect(bx + s, by + bh - 1, bw - s * 2, 1, "#ddd");
+      pxRect(bx, by + s, 1, bh - s * 2, "#ddd");
+      pxRect(bx + bw - 1, by + s, 1, bh - s * 2, "#ddd");
+      if (tailAx != null && tailBx != null) {
+        const tA = Math.max(bx + s * 2, Math.min(tailAx, bx + bw / 2 - s * 3));
+        const tB = Math.max(bx + bw / 2 + s * 3, Math.min(tailBx, bx + bw - s * 2));
+        pxRect(tA - s * 1.5, by + bh, s * 3, s, "#fff");
+        pxRect(tA - s, by + bh + s, s * 2, s, "#fff");
+        pxRect(tA - s * 0.5, by + bh + s * 2, s * 1.5, s, "#fff");
+        pxRect(tA, by + bh + s * 3, s, s, "#fff");
+        pxRect(tA, by + bh + s * 4, s * 0.5, s, "#fff");
+        pxRect(tA + s * 0.25, by + bh + s * 5, s * 0.5, s, "#fff");
+        pxRect(tB - s * 1.5, by + bh, s * 3, s, "#fff");
+        pxRect(tB - s, by + bh + s, s * 2, s, "#fff");
+        pxRect(tB - s * 0.5, by + bh + s * 2, s * 1.5, s, "#fff");
+        pxRect(tB, by + bh + s * 3, s, s, "#fff");
+        pxRect(tB, by + bh + s * 4, s * 0.5, s, "#fff");
+        pxRect(tB + s * 0.25, by + bh + s * 5, s * 0.5, s, "#fff");
+      } else {
+        const tailX = Math.max(bx + s * 4, Math.min(x, bx + bw - s * 4));
+        pxRect(tailX - s * 2, by + bh, s * 4, s, "#fff");
+        pxRect(tailX - s, by + bh + s, s * 2, s, "#fff");
+        pxRect(tailX - s * 0.5, by + bh + s * 2, s, s, "#fff");
+      }
+      if (title) {
+        ctx.font = "bold 12px -apple-system, sans-serif";
+        ctx.fillStyle = "#1a1a2e";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(title, bx + padding, by + padding);
+      }
+      ctx.font = "11px -apple-system, sans-serif";
+      ctx.fillStyle = "#555";
+      for (let i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], bx + padding, by + padding + titleH + i * lineH);
+      }
+      if (inviteLabel) {
+        ctx.font = "bold 9px 'Courier New', monospace";
+        const ibW = ctx.measureText(inviteLabel).width + 16;
+        const ibH = 20;
+        const textBottom = by + padding + titleH + lines.length * lineH + 6;
+        const ibX = bx + (bw - ibW) / 2;
+        const ibY = textBottom;
+        pxRect(ibX, ibY, ibW, ibH, "#2563eb");
+        ctx.fillStyle = "#fff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(inviteLabel, ibX + ibW / 2, ibY + ibH / 2);
+        drawSpeechBubble._inviteBounds = { x: ibX, y: ibY, w: ibW, h: ibH };
+      } else {
+        drawSpeechBubble._inviteBounds = null;
+      }
+    }
+
+    function wrapText(ctx, text, maxWidth) {
+      const words = text.split(" ");
+      const lines = [];
+      let current = "";
+      for (const word of words) {
+        const test = current ? current + " " + word : word;
+        if (ctx.measureText(test).width > maxWidth && current) { lines.push(current); current = word; }
+        else current = test;
+      }
+      if (current) lines.push(current);
+      return lines;
+    }
+
+    async function triggerPartySpark(a, b) {
+      sparkPending = true;
+      try {
+        const res = await fetch("/api/spark-evolve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            a: a.noteIdx, b: b.noteIdx,
+            context: {
+              scene: "party",
+              a_street_spark: a.streetSpark || {},
+              b_street_spark: b.streetSpark || {},
+            }
+          }),
+        });
+        const data = await res.json();
+        const prefix = CONVERSATIONAL_PREFIXES[Math.floor(Math.random() * CONVERSATIONAL_PREFIXES.length)];
+        const ideaText = data.spark.charAt(0).toLowerCase() + data.spark.slice(1);
+        bumpPair.sparkTitle = data.spark_title || "";
+        bumpPair.sparkText = prefix + ideaText;
+        bumpPair.speaker = Math.random() > 0.5 ? a : b;
+      } catch (e) {
+        bumpPair.sparkText = "The vibe shifted before they could finish the thought.";
+        bumpPair.sparkTitle = "";
+        bumpPair.speaker = a;
+      }
+      sparkPending = false;
+    }
+
+    function tryBump() {
+      if (bumpPair || sparkPending) return;
+      const candidates = people.filter(p => !p.stopped);
+      if (candidates.length < 2) return;
+      let bestDist = Infinity, bestA = null, bestB = null;
+      for (let i = 0; i < candidates.length; i++) {
+        for (let j = i + 1; j < candidates.length; j++) {
+          const dx = Math.abs(candidates[i].x - candidates[j].x);
+          const dy = Math.abs(candidates[i].y - candidates[j].y);
+          const dist = dx + dy;
+          if (dist < bestDist && dist < 80) {
+            bestDist = dist;
+            bestA = candidates[i];
+            bestB = candidates[j];
+          }
+        }
+      }
+      if (bestA && bestB) {
+        bumpPair = { a: bestA, b: bestB, phase: "approaching", timer: 0 };
+      }
+    }
+
+    function update() {
+      for (const p of people) {
+        if (p.stopped) continue;
+        p.frame++;
+
+        // Wander toward target
+        const dx = p.targetX - p.x;
+        const dy = p.targetY - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 5) {
+          p.pauseTimer++;
+          if (p.pauseTimer > 60 + Math.random() * 120) {
+            p.targetX = WALL_LEFT + 40 + Math.random() * (WALL_RIGHT - WALL_LEFT - 80);
+            p.targetY = FLOOR_Y + 10 + Math.random() * (FLOOR_BOTTOM - FLOOR_Y - 20);
+            p.pauseTimer = 0;
+          }
+        } else {
+          p.x += (dx / dist) * p.speed;
+          p.y += (dy / dist) * p.speed;
+          p.dir = dx > 0 ? 1 : -1;
+        }
+      }
+
+      if (bumpPair) {
+        const { a, b } = bumpPair;
+        const dist = Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+        if (bumpPair.phase === "approaching") {
+          // Steer toward each other
+          const midX = (a.x + b.x) / 2, midY = (a.y + b.y) / 2;
+          a.targetX = midX - 15; a.targetY = midY;
+          b.targetX = midX + 15; b.targetY = midY;
+          if (dist < 40) {
+            a.stopped = true; b.stopped = true;
+            a.dir = b.x > a.x ? 1 : -1;
+            b.dir = a.x > b.x ? 1 : -1;
+            bumpPair.phase = "talking";
+            bumpPair.timer = 0;
+            triggerPartySpark(a, b);
+          }
+        }
+        if (bumpPair && bumpPair.phase === "talking") {
+          bumpPair.timer++;
+          if (bumpPair.timer > 900 && !sparkPending) {
+            a.stopped = false; b.stopped = false;
+            a.targetX = WALL_LEFT + 40 + Math.random() * (WALL_RIGHT - WALL_LEFT - 80);
+            a.targetY = FLOOR_Y + 10 + Math.random() * (FLOOR_BOTTOM - FLOOR_Y - 20);
+            b.targetX = WALL_LEFT + 40 + Math.random() * (WALL_RIGHT - WALL_LEFT - 80);
+            b.targetY = FLOOR_Y + 10 + Math.random() * (FLOOR_BOTTOM - FLOOR_Y - 20);
+            bumpPair = null;
+            bumpCooldown = BUMP_INTERVAL;
+          }
+        }
+      } else {
+        bumpCooldown--;
+        if (bumpCooldown <= 0 && !paused) tryBump();
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      drawRoom();
+      drawPartyTitle();
+
+      const sorted = [...people].sort((a, b) => a.y - b.y);
+      for (const p of sorted) {
+        drawPerson(p);
+        const isBumpA = bumpPair && bumpPair.phase === "talking" && p === bumpPair.a;
+        const isBumpB = bumpPair && bumpPair.phase === "talking" && p === bumpPair.b;
+        const color = isBumpA ? "#F0C040" : isBumpB ? "#FF6B6B" : "rgba(255,255,200,0.5)";
+        drawNameTag(p.x, p.y, truncate(p.title, 18), color);
+      }
+
+      if (bumpPair && bumpPair.phase === "talking") {
+        if (!bumpPair.sparkText) {
+          drawThoughtBubble(bumpPair.a.x, bumpPair.a.y - PX * 10, bumpPair.timer);
+          drawThoughtBubble(bumpPair.b.x, bumpPair.b.y - PX * 10, bumpPair.timer + 30);
+        } else {
+          const speaker = bumpPair.speaker || bumpPair.a;
+          const inviteLabel = flaneurState.coffeeGuests.length < 2 && !bumpPair.invited ? "INVITE TO COFFEE" : null;
+          const midX = (bumpPair.a.x + bumpPair.b.x) / 2;
+          drawSpeechBubble(midX, Math.min(bumpPair.a.y, bumpPair.b.y) - PX * 40, bumpPair.sparkTitle, bumpPair.sparkText, inviteLabel, bumpPair.a.x, bumpPair.b.x, Math.min(bumpPair.a.y, bumpPair.b.y) - PX * 6);
+        }
+      }
+    }
+
+    function loop() {
+      if (!paused) update();
+      draw();
+      animFrame = requestAnimationFrame(loop);
+    }
+
+    const btnPause = document.getElementById("btn-pause");
+    const btnSkip = document.getElementById("btn-skip");
+    function onPause() { paused = !paused; btnPause.innerHTML = paused ? "&#9654;" : "&#9646;&#9646;"; }
+    function onSkip() {
+      if (bumpPair) { bumpPair.a.stopped = false; bumpPair.b.stopped = false; bumpPair = null; }
+      bumpCooldown = 0; sparkPending = false;
+    }
+    btnPause.addEventListener("click", onPause);
+    btnSkip.addEventListener("click", onSkip);
+
+    canvas.addEventListener("click", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) * (canvas.width / rect.width / dpr);
+      const my = (e.clientY - rect.top) * (canvas.height / rect.height / dpr);
+      const ib = drawSpeechBubble._inviteBounds;
+      if (ib && mx >= ib.x && mx <= ib.x + ib.w && my >= ib.y && my <= ib.y + ib.h && bumpPair && bumpPair.sparkText) {
+        if (flaneurState.coffeeGuests.length < 2) {
+          // Only invite the speaker to coffee
+          const person = bumpPair.speaker || bumpPair.a;
+          const spark = { title: bumpPair.sparkTitle, text: bumpPair.sparkText };
+          const already = new Set(flaneurState.coffeeGuests.map(g => g.noteIdx));
+          if (!already.has(person.noteIdx)) {
+            const guest = flaneurState.partyGuests.find(g => g.noteIdx === person.noteIdx) || {};
+            flaneurState.coffeeGuests.push({ ...guest, noteIdx: person.noteIdx, title: person.title, palette: person.palette, partySpark: spark });
+          }
+          bumpPair.invited = true;
+          bumpPair.timer = 800; // dismiss quickly
+          updateCoffeeButton();
+          drawSpeechBubble._inviteBounds = null;
+        }
+      }
+    });
+
+    cleanup = () => {
+      cancelAnimationFrame(animFrame);
+      paused = true;
+      btnPause.removeEventListener("click", onPause);
+      btnSkip.removeEventListener("click", onSkip);
+    };
+
+    loop();
+  }
+
+  // =============================================
+  // COFFEE SCENE
+  // =============================================
+  async function launchCoffee() {
+    flaneurState.currentScene = "coffee";
+
+    document.getElementById("btn-party").classList.add("hidden");
+    document.getElementById("btn-coffee").classList.add("hidden");
+    document.getElementById("btn-back-street").classList.remove("hidden");
+    document.getElementById("speed-control").classList.add("hidden");
+    document.getElementById("btn-pause").classList.add("hidden");
+    document.getElementById("btn-skip").classList.add("hidden");
+
+    const canvas = document.getElementById("street-canvas");
+    const dpr = window.devicePixelRatio || 1;
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+
+    const PX = 4; // slightly larger people for close-up
+    const P = 4;
+    const guestA = flaneurState.coffeeGuests[0];
+    const guestB = flaneurState.coffeeGuests[1];
+
+    function pxRect(x, y, w, h, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(Math.floor(x), Math.floor(y), Math.ceil(w), Math.ceil(h));
+    }
+
+    function makeSeeded(s) {
+      return () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+    }
+
+    // Scene elements
+    const TABLE_X = W * 0.5;
+    const TABLE_Y = H * 0.55;
+    const personAx = TABLE_X - 60;
+    const personBx = TABLE_X + 60;
+    const personY = TABLE_Y - 10;
+
+    let timer = 0;
+    let sparkText = null;
+    let sparkTitle = null;
+    let animFrame;
+
+    function drawCafe() {
+      const s = P;
+
+      // Wall
+      pxRect(0, 0, W, H * 0.6, "#F5E6D0");
+      // Wall texture
+      const rand = makeSeeded(80);
+      for (let i = 0; i < 40; i++) {
+        pxRect(Math.floor(rand() * W / s) * s, Math.floor(rand() * H * 0.6 / s) * s, s, s, "#EEDEc5");
+      }
+
+      // Window (left side)
+      const winX = W * 0.05, winY = H * 0.08, winW = W * 0.25, winH = H * 0.35;
+      pxRect(winX - s, winY - s, winW + s * 2, winH + s * 2, "#8B7355");
+      pxRect(winX, winY, winW, winH, "#B0D8F0");
+      // Sunlight glow
+      pxRect(winX, winY, winW, winH * 0.3, "rgba(255,240,200,0.15)");
+      // Window cross
+      pxRect(winX + winW / 2 - 1, winY, 2, winH, "#8B7355");
+      pxRect(winX, winY + winH / 2 - 1, winW, 2, "#8B7355");
+
+      // Plant on sill
+      pxRect(winX + winW - s * 6, winY + winH - s, s * 5, s, "#8B7355"); // sill
+      // Pot
+      pxRect(winX + winW - s * 5, winY + winH - s * 4, s * 3, s * 3, "#C0784A");
+      // Leaves
+      pxRect(winX + winW - s * 6, winY + winH - s * 7, s * 2, s * 3, "#2E8B57");
+      pxRect(winX + winW - s * 4, winY + winH - s * 8, s * 2, s * 4, "#3CB371");
+      pxRect(winX + winW - s * 3, winY + winH - s * 6, s * 2, s * 2, "#228B22");
+
+      // Framed picture (right wall)
+      pxRect(W * 0.72, H * 0.1, s * 12, s * 9, "#5A4030");
+      pxRect(W * 0.72 + s, H * 0.1 + s, s * 10, s * 7, "#6A8090");
+
+      // Exposed brick accent (right)
+      for (let by = 0; by < H * 0.6; by += s * 3) {
+        for (let bx = W * 0.88; bx < W; bx += s * 5) {
+          pxRect(bx + ((by / (s * 3)) % 2 === 0 ? 0 : s * 2.5), by, s * 4, s * 2, "#A0705A");
+          pxRect(bx + ((by / (s * 3)) % 2 === 0 ? 0 : s * 2.5), by + s * 2, s * 4, s * 0.5, "#8A6048");
+        }
+      }
+
+      // Floor
+      pxRect(0, H * 0.6, W, H * 0.4, "#D4B896");
+      for (let fy = H * 0.6; fy < H; fy += s * 4) {
+        pxRect(0, fy, W, 1, "#C0A880");
+      }
+
+      // Table
+      pxRect(TABLE_X - s * 12, TABLE_Y, s * 24, s * 3, "#8B6914");
+      pxRect(TABLE_X - s * 10, TABLE_Y + s, s * 20, s, "#9B7924");
+      // Table legs
+      pxRect(TABLE_X - s * 10, TABLE_Y + s * 3, s * 2, s * 10, "#7A5A10");
+      pxRect(TABLE_X + s * 8, TABLE_Y + s * 3, s * 2, s * 10, "#7A5A10");
+
+      // Coffee cups
+      for (const cx of [TABLE_X - s * 5, TABLE_X + s * 3]) {
+        pxRect(cx, TABLE_Y - s * 2, s * 3, s * 2, "#fff");
+        pxRect(cx + s * 3, TABLE_Y - s * 1.5, s, s, "#fff"); // handle
+        // Coffee
+        pxRect(cx + s * 0.5, TABLE_Y - s * 1.5, s * 2, s, "#5A3A1A");
+        // Steam
+        if (timer % 40 < 20) {
+          pxRect(cx + s, TABLE_Y - s * 3 - Math.sin(timer * 0.1) * 2, s * 0.5, s, "rgba(200,200,200,0.3)");
+          pxRect(cx + s * 1.5, TABLE_Y - s * 4 - Math.sin(timer * 0.1 + 1) * 2, s * 0.5, s, "rgba(200,200,200,0.2)");
+        }
+      }
+
+      // Title
+      const stripeY = s * 2;
+      pxRect(0, stripeY, W, s * 10, "rgba(100,70,40,0.2)");
+      ctx.font = "bold 32px 'Courier New', monospace";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "rgba(0,0,0,0.15)";
+      ctx.fillText("COFFEE", s * 6 + 2, s * 7 + 2);
+      ctx.fillStyle = "#5A3A1A";
+      ctx.fillText("COFFEE", s * 6, s * 7);
+      ctx.font = "11px 'Courier New', monospace";
+      ctx.fillStyle = "rgba(90,58,26,0.6)";
+      ctx.fillText("the deep conversation", s * 6 + ctx.measureText("COFFEE").width + 20, s * 7);
+    }
+
+    function drawPerson(x, y, palette, dir) {
+      const s = PX;
+      pxRect(x - 2 * s, y + 10 * s, 6 * s, s, "rgba(0,0,0,0.1)");
+      pxRect(x - 1 * s, y + 6 * s, s * 1.5, s * 4, palette.pants);
+      pxRect(x + 1.5 * s, y + 6 * s, s * 1.5, s * 4, palette.pants);
+      pxRect(x - 1.5 * s, y + 9.5 * s, s * 2.5, s, "#333");
+      pxRect(x + 1 * s, y + 9.5 * s, s * 2.5, s, "#333");
+      pxRect(x - 2 * s, y + 2 * s, s * 6, s * 4.5, palette.shirt);
+      pxRect(x - 3.5 * s, y + 2 * s, s * 1.5, s * 3.5, palette.shirt);
+      pxRect(x + 4 * s, y + 2 * s, s * 1.5, s * 3.5, palette.shirt);
+      pxRect(x - 3.5 * s, y + 5 * s, s * 1.5, s, palette.skin);
+      pxRect(x + 4 * s, y + 5 * s, s * 1.5, s, palette.skin);
+      pxRect(x, y + 0.5 * s, s * 2, s * 2, palette.skin);
+      pxRect(x - 1.5 * s, y - 4 * s, s * 5, s * 5, palette.skin);
+      pxRect(x - 1.5 * s, y - 5 * s, s * 5, s * 2.5, palette.hair);
+      if (dir > 0) pxRect(x - 1.5 * s, y - 4 * s, s, s * 3, palette.hair);
+      else pxRect(x + 2.5 * s, y - 4 * s, s, s * 3, palette.hair);
+      if (dir > 0) { pxRect(x + 1 * s, y - 2 * s, s, s, "#1a1a2e"); pxRect(x + 2.5 * s, y - 2 * s, s, s, "#1a1a2e"); }
+      else { pxRect(x - 0.5 * s, y - 2 * s, s, s, "#1a1a2e"); pxRect(x + 1 * s, y - 2 * s, s, s, "#1a1a2e"); }
+    }
+
+    // Trigger the deep conversation
+    async function triggerCoffee() {
+      try {
+        const res = await fetch("/api/spark-evolve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            a: guestA.noteIdx, b: guestB.noteIdx,
+            context: {
+              scene: "coffee",
+              a_street_spark: guestA.streetSpark || {},
+              b_street_spark: guestB.streetSpark || {},
+              a_party_spark: guestA.partySpark || {},
+              b_party_spark: guestB.partySpark || {},
+            }
+          }),
+        });
+        const data = await res.json();
+        sparkTitle = data.spark_title || "";
+        sparkText = data.spark;
+      } catch (e) {
+        sparkTitle = "Lost in thought";
+        sparkText = "Sometimes the best ideas need another cup.";
+      }
+    }
+
+    // Start conversation after 3 seconds
+    let conversationStarted = false;
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      drawCafe();
+
+      // Draw people
+      drawPerson(personAx, personY, guestA.palette, 1);
+      drawPerson(personBx, personY, guestB.palette, -1);
+
+      // Name tags
+      ctx.font = "bold 12px -apple-system, sans-serif";
+      const tagA = truncate(guestA.title, 20);
+      const tagB = truncate(guestB.title, 20);
+      const twA = ctx.measureText(tagA).width + 14;
+      const twB = ctx.measureText(tagB).width + 14;
+      pxRect(personAx - twA / 2 + PX, personY - PX * 8, twA, 22, "rgba(255,255,255,0.9)");
+      pxRect(personBx - twB / 2 + PX, personY - PX * 8, twB, 22, "rgba(255,255,255,0.9)");
+      ctx.fillStyle = "#2563eb";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(tagA, personAx + PX, personY - PX * 8 + 11);
+      ctx.fillStyle = "#dc2626";
+      ctx.fillText(tagB, personBx + PX, personY - PX * 8 + 11);
+
+      // Thought bubbles while thinking
+      if (conversationStarted && !sparkText) {
+        const s = P;
+        const bob = Math.sin(timer * 0.08) * 2;
+        // Person A thought bubble
+        pxRect(personAx + s, personY - PX * 10 + s * 4 + bob, s * 1.5, s * 1.5, "rgba(255,255,255,0.7)");
+        pxRect(personAx - s, personY - PX * 10 + s * 2 + bob * 0.7, s * 2, s * 2, "rgba(255,255,255,0.8)");
+        const bw = s * 8, bh = s * 5;
+        let bx = personAx - bw / 2, by = personY - PX * 10 - bh + bob * 0.5;
+        pxRect(bx + s, by, bw - s * 2, bh, "rgba(255,255,255,0.9)");
+        pxRect(bx, by + s, bw, bh - s * 2, "rgba(255,255,255,0.9)");
+        const dotPhase = Math.floor(timer * 0.06) % 3;
+        for (let i = 0; i < 3; i++) {
+          pxRect(bx + s * 2 + i * s * 2, by + bh / 2 - s * 0.5, s, s, `rgba(100,100,120,${i === dotPhase ? 1 : 0.3})`);
+        }
+        // Person B thought bubble
+        pxRect(personBx + s, personY - PX * 10 + s * 4 + bob, s * 1.5, s * 1.5, "rgba(255,255,255,0.7)");
+        pxRect(personBx - s, personY - PX * 10 + s * 2 + bob * 0.7, s * 2, s * 2, "rgba(255,255,255,0.8)");
+        bx = personBx - bw / 2; by = personY - PX * 10 - bh + bob * 0.5;
+        pxRect(bx + s, by, bw - s * 2, bh, "rgba(255,255,255,0.9)");
+        pxRect(bx, by + s, bw, bh - s * 2, "rgba(255,255,255,0.9)");
+        for (let i = 0; i < 3; i++) {
+          pxRect(bx + s * 2 + i * s * 2, by + bh / 2 - s * 0.5, s, s, `rgba(100,100,120,${i === ((dotPhase + 1) % 3) ? 1 : 0.3})`);
+        }
+      }
+
+      // Show result when ready
+      if (sparkText && timer > 240) {
+        document.getElementById("coffee-title").textContent = sparkTitle;
+        document.getElementById("coffee-idea").textContent = sparkText;
+        document.getElementById("coffee-result").classList.remove("hidden");
+      }
+    }
+
+    function loop() {
+      timer++;
+      if (timer === 180 && !conversationStarted) {
+        conversationStarted = true;
+        triggerCoffee();
+      }
+      draw();
+      animFrame = requestAnimationFrame(loop);
+    }
+
+    cleanup = () => {
+      cancelAnimationFrame(animFrame);
+      document.getElementById("btn-pause").classList.remove("hidden");
+      document.getElementById("btn-skip").classList.remove("hidden");
+    };
+
     loop();
   }
 
