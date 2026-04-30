@@ -30,11 +30,19 @@
                     </div>
                 </div>
                 <div class="intro-form">
+                    <div id="drop-zone" class="drop-zone">
+                        <p class="drop-icon">📂</p>
+                        <p class="drop-text">Drag your .md files here</p>
+                        <p class="drop-hint">or</p>
+                        <label class="file-picker-btn">
+                            CHOOSE FILES
+                            <input type="file" id="file-input" multiple accept=".md" hidden>
+                        </label>
+                    </div>
+                    <p id="folder-status" class="setup-status"></p>
                     <label for="apikey-input">YOUR ANTHROPIC API KEY</label>
                     <input type="password" id="apikey-input" placeholder="sk-ant-..." spellcheck="false">
                     <p class="apikey-hint">Get one at console.anthropic.com — never stored, sent per-request only.</p>
-                    <button id="btn-browse" type="button">CHOOSE YOUR NOTES FOLDER</button>
-                    <p id="folder-status" class="setup-status"></p>
                     <button id="btn-start" disabled>LET THEM OUT</button>
                     <p id="setup-status" class="setup-status"></p>
                 </div>

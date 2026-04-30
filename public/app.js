@@ -158,63 +158,99 @@
     }
   }
 
-  // --- Browser-side file reading ---
+  // --- Browser-side file reading (drag & drop + file input) ---
 
   function extractTitle(content, filename) {
-    // YAML frontmatter
     const fm = content.match(/^---\s*\n([\s\S]*?)\n---/);
     if (fm) {
       for (const line of fm[1].split("\n")) {
         if (line.startsWith("title:")) return line.split(":").slice(1).join(":").trim().replace(/^["']|["']$/g, "");
       }
     }
-    // First H1
     const h1 = content.match(/^#\s+(.+)/m);
     if (h1) return h1[1].trim();
     return filename;
   }
 
-  async function readNotesFromDirectory(dirHandle, basePath) {
+  async function processFiles(fileList) {
+    const folderStatus = document.getElementById("folder-status");
     const notes = [];
-    for await (const entry of dirHandle.values()) {
-      if (entry.kind === "file" && entry.name.endsWith(".md")) {
-        try {
-          const file = await entry.getFile();
-          const content = await file.text();
-          if (!content.trim()) continue;
-          const title = extractTitle(content, entry.name.replace(/\.md$/, ""));
-          notes.push({
-            id: notes.length,
-            title,
-            path: basePath + entry.name,
-            content,
-            preview: content.slice(0, 500),
-          });
-        } catch (e) { continue; }
-      } else if (entry.kind === "directory") {
-        const subNotes = await readNotesFromDirectory(entry, basePath + entry.name + "/");
-        for (const n of subNotes) { n.id = notes.length + subNotes.indexOf(n); notes.push(n); }
+    for (const file of fileList) {
+      if (!file.name.endsWith(".md")) continue;
+      try {
+        const content = await file.text();
+        if (!content.trim()) continue;
+        const title = extractTitle(content, file.name.replace(/\.md$/, ""));
+        notes.push({
+          id: notes.length,
+          title,
+          path: file.name,
+          content,
+          preview: content.slice(0, 500),
+        });
+      } catch (e) { continue; }
+    }
+    if (notes.length === 0) {
+      folderStatus.textContent = "No .md files found.";
+      folderStatus.className = "setup-status error";
+      return;
+    }
+    // Append to existing notes (user can drop multiple batches)
+    const existing = new Set(flaneurState.notes.map(n => n.title));
+    for (const n of notes) {
+      if (!existing.has(n.title)) {
+        n.id = flaneurState.notes.length;
+        flaneurState.notes.push(n);
       }
     }
-    // Fix IDs
-    notes.forEach((n, i) => n.id = i);
-    return notes;
+    folderStatus.textContent = `${flaneurState.notes.length} notes ready.`;
+    folderStatus.className = "setup-status";
+    btnStart.disabled = false;
   }
 
-  document.getElementById("btn-browse").addEventListener("click", async () => {
-    try {
-      const dirHandle = await window.showDirectoryPicker();
-      const folderStatus = document.getElementById("folder-status");
-      folderStatus.textContent = "Reading notes...";
-      const notes = await readNotesFromDirectory(dirHandle, "");
-      flaneurState.notes = notes;
-      folderStatus.textContent = `${notes.length} notes found.`;
-      if (notes.length > 0) btnStart.disabled = false;
-    } catch (e) {
-      if (e.name !== "AbortError") {
-        document.getElementById("folder-status").textContent = "Could not read folder.";
+  // Drag and drop
+  const dropZone = document.getElementById("drop-zone");
+  dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.classList.add("drag-over");
+  });
+  dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("drag-over");
+  });
+  dropZone.addEventListener("drop", async (e) => {
+    e.preventDefault();
+    dropZone.classList.remove("drag-over");
+    const items = e.dataTransfer.items;
+    const files = [];
+    // Handle both files and directories
+    const entries = [];
+    for (const item of items) {
+      const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
+      if (entry) entries.push(entry);
+      else if (item.kind === "file") files.push(item.getAsFile());
+    }
+    if (entries.length > 0) {
+      await readEntries(entries, files);
+    }
+    await processFiles(files);
+  });
+
+  async function readEntries(entries, files) {
+    for (const entry of entries) {
+      if (entry.isFile) {
+        const file = await new Promise(r => entry.file(r));
+        files.push(file);
+      } else if (entry.isDirectory) {
+        const reader = entry.createReader();
+        const subEntries = await new Promise(r => reader.readEntries(r));
+        await readEntries(subEntries, files);
       }
     }
+  }
+
+  // File input fallback
+  document.getElementById("file-input").addEventListener("change", async (e) => {
+    await processFiles(e.target.files);
   });
 
   btnStart.addEventListener("click", () => {
