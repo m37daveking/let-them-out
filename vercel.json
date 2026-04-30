@@ -1,4 +1,12 @@
 {
+  "framework": null,
+  "buildCommand": "",
+  "outputDirectory": "public",
+  "functions": {
+    "api/*.py": {
+      "runtime": "@vercel/python@4.5.1"
+    }
+  },
   "rewrites": [
     { "source": "/api/spark", "destination": "/api/spark" },
     { "source": "/api/spark-evolve", "destination": "/api/spark-evolve" }
