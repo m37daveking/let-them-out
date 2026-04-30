@@ -1,4 +1,4 @@
-// Let Them Out — let your notes mingle
+// Let Them Out — Let your notes mingle!
 
 (function () {
   const appScreen = document.getElementById("app");
@@ -724,7 +724,7 @@
       ctx.font = "bold 32px 'Courier New', monospace";
       const titleW = ctx.measureText("LET THEM OUT").width;
       ctx.font = "11px 'Courier New', monospace";
-      ctx.fillText("let your notes mingle", tx + titleW + 20, ty);
+      ctx.fillText("Let your notes mingle!", tx + titleW + 20, ty);
 
       // Change folder button (top right, pixel style)
       const btnText = "CHANGE FOLDER";

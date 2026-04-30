@@ -259,6 +259,27 @@ body {
 
 .setup-status.error { color: #FF6B6B; }
 
+/* ---- Credit ---- */
+.credit {
+    position: absolute;
+    bottom: 8px;
+    right: 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    z-index: 10;
+}
+
+.credit a {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.credit a:hover {
+    color: #fff;
+}
+
 /* ---- Main app ---- */
 #app {
     position: relative;
