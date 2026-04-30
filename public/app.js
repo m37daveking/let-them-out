@@ -158,6 +158,32 @@
     }
   }
 
+  // --- Sample notes ---
+  document.getElementById("btn-sample").addEventListener("click", async () => {
+    const folderStatus = document.getElementById("folder-status");
+    folderStatus.textContent = "Loading sample notes...";
+    try {
+      const manifestRes = await fetch("/sample-notes/manifest.json");
+      const filenames = await manifestRes.json();
+      // Pick 20 random ones
+      const picked = filenames.sort(() => Math.random() - 0.5).slice(0, 20);
+      const notes = [];
+      for (const filename of picked) {
+        const res = await fetch(`/sample-notes/${filename}`);
+        const content = await res.text();
+        if (!content.trim()) continue;
+        const title = extractTitle(content, filename.replace(/\.md$/, ""));
+        notes.push({ id: notes.length, title, path: filename, content, preview: content.slice(0, 500) });
+      }
+      flaneurState.notes = notes;
+      folderStatus.textContent = `${notes.length} sample notes loaded.`;
+      btnStart.disabled = false;
+    } catch (e) {
+      folderStatus.textContent = "Failed to load samples.";
+      folderStatus.className = "setup-status error";
+    }
+  });
+
   // --- Browser-side file reading (drag & drop + file input) ---
 
   function extractTitle(content, filename) {

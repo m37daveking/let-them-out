@@ -1,0 +1,3 @@
+# Tetrachromacy and Hidden Colors
+
+About 12% of women carry a fourth type of cone cell in their retinas, potentially seeing up to 100 million colors compared to the typical 1 million. Most never realize it because the world is designed for trichromats. Artist Concetta Antico is a confirmed tetrachromat who describes seeing "colors within colors" — a white wall shimmers with pinks, blues, and greens invisible to the rest of us. The condition is linked to the X chromosome, which is why men almost never have it. It raises a strange philosophical question: if a color exists but only some people see it, is it real?

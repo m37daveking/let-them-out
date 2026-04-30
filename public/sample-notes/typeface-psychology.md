@@ -1,0 +1,3 @@
+# Typefaces Change What You Believe
+
+A 2012 experiment by documentary filmmaker Errol Morris, run through the New York Times, showed 45,000 readers the same passage in six different typefaces. Readers were significantly more likely to agree with statements set in Baskerville than in Comic Sans or Helvetica. The effect was small but statistically significant and consistent across demographics. Baskerville, designed in 1757, has a formality that primes trust. Court documents, medical labels, and financial reports all exploit this — their authority is partly typographic. The unsettling implication: the same fact, in a different font, becomes more or less true.

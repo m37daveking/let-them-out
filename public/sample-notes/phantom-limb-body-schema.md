@@ -1,0 +1,3 @@
+# Phantom Limbs and the Body's Map of Itself
+
+After amputation, up to 80% of people feel vivid sensations in the missing limb — pain, itching, even the feeling of clenching a fist. V.S. Ramachandran discovered he could treat phantom limb pain using a simple mirror box, tricking the brain into "seeing" the missing limb unclench. The brain maintains a body schema — an internal model of the body — that persists even when the body changes. This schema can be hacked: the rubber hand illusion makes people feel ownership over a fake hand in minutes. Tool use extends the schema too — experienced hammerers' brains treat the hammer as part of their arm. The body you feel is not the body you have; it's a simulation your brain runs.

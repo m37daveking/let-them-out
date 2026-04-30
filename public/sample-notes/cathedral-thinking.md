@@ -1,0 +1,3 @@
+# Cathedral Thinking
+
+The builders of medieval cathedrals knew they would never see the finished structure. Notre-Dame de Paris took 182 years to complete. Cologne Cathedral took 632 years. The stonemasons who carved the foundations worked toward a vision they inherited from the dead and would bequeath to the unborn. This mindset — cathedral thinking — is almost extinct in modern business, where quarterly earnings define the horizon. Architect Greta Thunberg revived the term, but the concept lives on in projects like the 10,000 Year Clock being built inside a mountain in west Texas by the Long Now Foundation. The question it poses: what would you build if you didn't need to see it finished?

@@ -1,0 +1,3 @@
+# Mirror Neurons and Involuntary Empathy
+
+When you watch someone pick up a cup of coffee, the same neurons fire in your brain as if you were picking it up yourself. These mirror neurons, first discovered in macaque monkeys by Giacomo Rizzolatti in the 1990s, blur the line between self and other. They may explain why yawning is contagious, why watching sports feels visceral, and why reading fiction measurably increases empathy. Psychopaths have functioning mirror neurons but can switch them off voluntarily — empathy for them is a choice, not an automatic response. This suggests that the default human state is connection, and cruelty requires effort.

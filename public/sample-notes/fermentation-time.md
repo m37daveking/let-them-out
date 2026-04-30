@@ -1,0 +1,3 @@
+# Fermentation and the Patience of Flavor
+
+Soy sauce takes between six months and five years to ferment properly. The microbes doing the work — Aspergillus oryzae — are the same family used in sake, miso, and the high-end Japanese rice vinegar that sells for $80 a bottle. Speed kills flavor: industrial soy sauce is made in two days using hydrolyzed soy protein and caramel coloring. The difference is the difference between a conversation and a press release. Korean onggi pots are porous enough to let microbes breathe while keeping insects out, a technology unchanged for a thousand years. Fermentation is the only cooking method where you succeed by losing control.

@@ -1,0 +1,3 @@
+# Your Feet Are Younger Than Your Head
+
+Because of gravitational time dilation, clocks at lower altitudes tick slightly slower than clocks at higher altitudes. Your feet, being closer to Earth's center of mass, age more slowly than your head by roughly 90 nanoseconds per year. This is not theoretical — it has been measured with atomic clocks on different floors of the same building. GPS satellites must correct for this effect or navigation would drift by about 10 kilometers per day. Einstein predicted this in 1915, but it was not confirmed until 1959 with the Pound-Rebka experiment. Time is not a constant backdrop to events; it is woven into the fabric of space itself, stretching and compressing with mass.

@@ -1,0 +1,3 @@
+# Indigo and the Color That Funded Empires
+
+Indigo dye was so valuable in the 17th century that it was called "blue gold." The British forced Bengali farmers to grow indigo instead of food, contributing to famines that killed millions. When synthetic indigo was invented by Adolf von Baeyer in 1880, it collapsed the entire economy of colonial India's indigo-producing regions overnight. Today, producing enough indigo to dye a single pair of jeans requires roughly 3 to 12 grams of synthetic dye and generates significant toxic waste. The Teinturiers, medieval European dyers, kept their recipes as guarded secrets and passed them down through generations like sacred texts. A color is never just a color — it carries an entire supply chain of power, labor, and chemistry.

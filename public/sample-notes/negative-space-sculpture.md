@@ -1,0 +1,3 @@
+# Negative Space in Sculpture
+
+Henry Moore's reclining figures have holes through them — not because material was removed, but because the emptiness is the point. He argued that a hole can have as much meaning as a solid mass. In Chinese painting, this idea is called "liu bai" — leaving white — where unpainted areas carry the emotional weight. Jazz musicians call it "playing the silence." Architects like Tadao Ando design buildings where shafts of emptiness channel light and create presence through absence. The counterintuitive skill in almost every creative field is knowing what to leave out.

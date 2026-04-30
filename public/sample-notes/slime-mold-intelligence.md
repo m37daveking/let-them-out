@@ -1,0 +1,3 @@
+# Slime Mold Intelligence
+
+Physarum polycephalum has no brain, no neurons, and no central nervous system, yet it can solve mazes, recreate the Tokyo rail network, and make trade-off decisions between food quality and risk. When researchers placed oat flakes on a map at the locations of Tokyo's major stations, the slime mold grew a network almost identical to the actual rail system — one that engineers had spent decades optimizing. It achieves this through a pulsing vascular network where tubes carrying nutrients thicken along efficient paths and wither elsewhere. This organism challenges the assumption that intelligence requires a brain. It suggests that computation might be a property of networks themselves, not the nodes within them.

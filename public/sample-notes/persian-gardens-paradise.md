@@ -1,0 +1,3 @@
+# Persian Gardens and the Invention of Paradise
+
+The English word "paradise" comes from the Old Persian "pairidaeza," meaning a walled garden. In the arid Iranian plateau, creating a green, water-rich enclosure was an act of defiance against nature so profound it became synonymous with heaven itself. Persian gardens use a chahar bagh layout — four quadrants divided by water channels representing the four rivers of Eden. The Persians invented the qanat, an underground aqueduct system, some stretching 45 kilometers, to feed these gardens from mountain aquifers. Every garden was a theological argument: that human ingenuity could restore a fragment of the divine on earth.

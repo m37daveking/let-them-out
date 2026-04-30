@@ -1,0 +1,3 @@
+# Why Constraints Make Improvisation Better
+
+Jazz musicians improvise better over chord changes than over open vamps. Improv comedians perform better with audience suggestions than without them. Poets working in sonnets produce more creative imagery than those writing free verse, according to studies at the University of San Francisco. The brain's creative networks actually light up more under constraint, because limitations force novel combinations rather than defaulting to habit. This is why Twitter's character limit spawned new literary forms, why Dr. Seuss wrote "Green Eggs and Ham" using only 50 different words on a bet, and why the best startup ideas often come from founders who couldn't afford the obvious solution.

@@ -1,0 +1,3 @@
+# Kintsugi and the Beauty of Breaking
+
+Kintsugi is the Japanese art of repairing broken pottery with lacquer mixed with powdered gold, silver, or platinum. Rather than hiding damage, it illuminates it — the repair becomes the most beautiful part of the object. The philosophy draws from wabi-sabi, which finds beauty in impermanence and imperfection. A kintsugi bowl is more valuable than the unbroken original. The practice emerged in the 15th century when a shogun sent a broken tea bowl to China for repair and was disappointed by the ugly metal staples used to fix it. There is no Western equivalent for this idea, which says something about Western culture's relationship with failure and damage.

@@ -1,0 +1,3 @@
+# The Default Effect and Organ Donation
+
+Countries where organ donation is the default option (opt-out) have donation consent rates near 99%. Countries where you must actively opt in hover around 15%. The medical infrastructure, cultural attitudes, and religious beliefs are often similar — the only difference is a checkbox on a form. This is the default effect, and it governs far more than organ donation: retirement savings rates double when 401k enrollment is automatic, software privacy settings are rarely changed from factory defaults, and most people never switch from the pre-installed browser. The person who designs the default wields more power than the person who makes the choice.

@@ -1,0 +1,3 @@
+# Dunbar's Number and the Limits of Belonging
+
+Robin Dunbar proposed that humans can maintain stable social relationships with about 150 people, a limit set by our neocortex size. This number keeps appearing: the average size of a Neolithic farming village, a Roman military company, the typical Amish community before it splits, and the point at which companies start needing formal HR departments. Gore-Tex famously caps its factory units at 150 employees and builds a new building rather than expanding. Beyond 150, people stop being individuals and become roles. The implication is that every social technology — from Slack to cities — is an attempt to hack a primate brain that evolved for village life.

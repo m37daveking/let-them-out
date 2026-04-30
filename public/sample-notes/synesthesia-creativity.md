@@ -1,0 +1,3 @@
+# Synesthesia and Cross-Wired Creativity
+
+Synesthetes experience blended senses: letters have colors, music has shapes, numbers have spatial positions. Nabokov saw the letter "a" as weathered wood, Pharrell Williams sees music in color, and physicist Richard Feynman saw equations in tan, violet, and red. The condition occurs in roughly 4% of the population but is dramatically overrepresented among artists and musicians. Brain imaging shows synesthetes have extra neural connections between sensory regions that most people prune away in childhood. This raises a provocative possibility: maybe all infants experience synesthesia, and what we call "normal" perception is actually a narrowing, a loss of connections in exchange for efficiency.

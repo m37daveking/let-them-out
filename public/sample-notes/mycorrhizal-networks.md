@@ -1,0 +1,3 @@
+# The Wood Wide Web
+
+Beneath every forest floor, mycorrhizal fungi connect trees in a vast underground network. Mother trees send carbon to their seedlings through these fungal threads. Dying trees dump their resources into the network for neighbors to absorb. Douglas firs and paper birches — different species — share carbon back and forth seasonally, like neighbors trading surplus garden tomatoes. Suzanne Simard's research showed that removing hub trees (the most connected nodes) causes surrounding trees to die at significantly higher rates. A forest is not a collection of competing individuals; it is a superorganism with a shared circulatory system made of fungi.

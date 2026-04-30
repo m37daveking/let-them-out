@@ -1,0 +1,3 @@
+# Why Athletes Choke Under Pressure
+
+Sian Beilock's research at the University of Chicago found that choking happens when performers shift from automatic processing to explicit monitoring — they start thinking about actions that work best when unthought. A golfer who consciously tracks their swing mechanics will putt worse than one who hums a song. The prefrontal cortex, normally an asset, becomes a liability when it hijacks well-rehearsed motor programs. Skilled athletes choke more than beginners because they have more automaticity to disrupt. The paradox is sharp: the cure for high-stakes failure is not more focus but less. Distraction techniques — counting backward, squeezing a ball in the left hand — outperform concentration.

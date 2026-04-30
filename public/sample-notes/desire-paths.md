@@ -1,0 +1,3 @@
+# Desire Paths and Emergent Design
+
+The unofficial trails worn into grass by pedestrians ignoring sidewalks are called desire paths. Some university campuses — notably Michigan State — now wait a year before paving, letting students' feet reveal the optimal routes, then paving those instead. Architects call this "stigmergy": letting traces of past behavior guide future design. The same principle appears in ant colonies, Wikipedia edits, and Amazon's recommendation engine. Desire paths are a standing rebuke to top-down planning. They say: watch what people actually do, not what your blueprint says they should do.

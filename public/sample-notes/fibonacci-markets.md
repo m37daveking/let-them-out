@@ -1,0 +1,3 @@
+# Fibonacci Retracements in Financial Markets
+
+Traders use Fibonacci ratios — 23.6%, 38.2%, 61.8% — to predict where stock prices will find support or resistance after a move. The spooky part is that it works, not because markets follow mathematical laws, but because enough traders believe in Fibonacci levels that their collective behavior creates the very patterns they expect. This is a self-fulfilling prophecy embedded in mathematics. The 61.8% ratio (the golden ratio's inverse) appears in sunflower seeds, hurricane spirals, and galaxy arms. Whether it "really" governs markets or merely hypnotizes traders into creating order is one of the most interesting questions in behavioral economics.

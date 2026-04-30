@@ -1,0 +1,3 @@
+# Price Anchoring and the Decoy Effect
+
+Williams-Sonoma once introduced a $429 bread maker that barely sold — but it doubled sales of their existing $279 model. The expensive machine wasn't meant to sell; it was an anchor that made the cheaper one look like a bargain. This is the decoy effect, and it's everywhere: movie theater popcorn pricing (small $5, medium $8, large $8.50), subscription tiers, and real estate showings where agents show an overpriced dump first. Daniel Kahneman found that even random numbers — spinning a wheel before guessing African countries in the UN — bias numerical estimates. Our brains don't evaluate price in absolute terms; they evaluate it relative to whatever number they saw last.

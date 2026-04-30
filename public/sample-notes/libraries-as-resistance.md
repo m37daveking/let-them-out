@@ -1,0 +1,3 @@
+# Libraries as Acts of Resistance
+
+During apartheid, South African activists ran secret underground libraries in townships where Black citizens were denied access to public libraries. In Sarajevo during the 1992 siege, librarians risked sniper fire to evacuate books from the burning National Library, carrying them out in shopping bags. In prison, Malcolm X educated himself by copying the entire dictionary by hand, then reading every book in the Norfolk Prison Colony library. Andrew Carnegie funded 2,509 libraries precisely because he understood that access to knowledge is the most dangerous form of power redistribution. Every library is a quiet argument that knowledge should not be gated by wealth.

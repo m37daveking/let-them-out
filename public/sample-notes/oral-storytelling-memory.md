@@ -1,0 +1,3 @@
+# How Oral Cultures Remember Everything
+
+Before writing, Aboriginal Australians encoded navigation data, law, and ecological knowledge into songlines — paths across the landscape where specific songs must be sung at specific locations. These songlines have been maintained accurately for an estimated 10,000+ years, making them the longest continuous oral tradition on Earth. The method of loci, used by Greek orators and modern memory champions, works on the same principle: attach information to places. Milman Parry showed that Homer's Iliad was composed orally, using formulaic phrases ("rosy-fingered dawn") as memory scaffolding. Writing didn't improve memory; it replaced it. Literate cultures traded the ability to remember for the ability to forget.

@@ -1,0 +1,3 @@
+# Cargo Cults and the Mimicry Trap
+
+After World War II, islanders in Melanesia built wooden headphones, straw control towers, and bamboo antennas, hoping to summon the cargo planes that had brought supplies during the war. They had perfectly replicated the form while missing the substance. Richard Feynman coined "cargo cult science" to describe research that follows all the rituals of scientific method but never actually discovers anything. The pattern is everywhere: companies that copy Google's open office plans without understanding the culture, startups that mimic pitch decks without having a business, people who buy the gear before learning the skill. The question worth asking constantly is: am I building a real runway or a bamboo one?

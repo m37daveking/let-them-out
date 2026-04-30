@@ -1,0 +1,3 @@
+# The Octopus Has Nine Brains
+
+An octopus has a central brain and eight additional ganglia — one in each arm — that can taste, touch, and make decisions independently. A severed arm will still reach for food and bring it toward where the mouth would be. Two-thirds of an octopus's neurons are in its arms, not its head. They can solve puzzles, use tools, and recognize individual human faces, yet they live only 1-3 years and are mostly solitary, which means they can't pass knowledge to offspring. If octopuses lived longer and were social, they might have developed civilization. Their intelligence evolved completely independently from ours, making them the closest thing to alien minds on Earth.

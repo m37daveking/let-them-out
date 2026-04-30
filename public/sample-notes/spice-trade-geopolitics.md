@@ -1,0 +1,3 @@
+# How Nutmeg Shaped the Modern World
+
+In 1667, the Dutch traded the island of Manhattan to Britain in exchange for Run, a tiny nutmeg-producing island in Indonesia. At the time, nutmeg was worth more than gold by weight — it was believed to cure plague. The spice trade funded the Dutch Golden Age, motivated Columbus's voyage, and caused the Portuguese to circumnavigate Africa. Control of clove and nutmeg production in the Banda Islands led the Dutch to commit one of history's first corporate-sponsored genocides, killing or enslaving nearly the entire local population. Every time you grate nutmeg into a bechamel sauce, you are using a spice that reshaped the global map.

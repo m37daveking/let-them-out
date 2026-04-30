@@ -1,0 +1,3 @@
+# A Sourdough Starter Is an Ecosystem
+
+A mature sourdough starter contains roughly 50 species of bacteria and 20 species of yeast, all in dynamic equilibrium. The specific mix is influenced by the flour, the water, the altitude, and even the baker's hands — everyone's starter is literally unique. Researchers at the Rob Dunn Lab found that starters from different countries converge on similar microbial communities regardless of origin, suggesting the flour selects for specific organisms. Some San Francisco bakeries have maintained continuous starters for over 170 years. A sourdough starter is less a recipe and more a relationship: a co-evolved partnership between human and microbe that predates agriculture.

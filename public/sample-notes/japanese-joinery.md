@@ -1,0 +1,3 @@
+# Japanese Joinery Without Nails
+
+Traditional Japanese carpentry uses no nails, screws, or glue. The wood pieces lock together through hundreds of interlocking joint types — some so complex they require 3D modeling to understand, yet they were designed centuries ago. The Horyu-ji temple in Nara has stood since 607 AD using these joints. The key insight is that wood moves: it expands and contracts with humidity, and rigid fasteners fight this movement while joinery accommodates it. Master carpenter Tsunekazu Nishioka said his craft was about "listening to what the tree wants to become." This is engineering as collaboration with material rather than domination of it.
