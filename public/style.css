@@ -286,12 +286,14 @@ body {
 /* ---- Credit ---- */
 .credit {
     position: absolute;
-    bottom: 8px;
-    right: 16px;
+    bottom: 12px;
+    right: 20px;
     font-family: 'Courier New', monospace;
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 18px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
     z-index: 10;
+    letter-spacing: 0.04em;
 }
 
 .credit a {
