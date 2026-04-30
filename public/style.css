@@ -72,39 +72,12 @@ body {
     margin-bottom: 10px;
 }
 
-.intro-steps {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 10px;
-}
-
-.intro-step {
-    flex: 1;
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    padding: 8px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.step-num {
+.intro-flow {
     font-family: 'Courier New', monospace;
-    font-size: 16px;
-    font-weight: 700;
-    color: #fff;
-    line-height: 1;
-}
-
-.step-text {
     font-size: 12px;
-    color: #fff;
-    line-height: 1.4;
-    text-align: left;
-}
-
-.step-text strong {
-    color: #fff;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 14px;
+    letter-spacing: 0.02em;
 }
 
 .intro-form {
