@@ -229,7 +229,6 @@
       launchStreet();
     }, 600);
   });
-  }
 
   function showStatus(msg, err) {
     setupStatus.textContent = msg;
