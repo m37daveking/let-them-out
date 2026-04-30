@@ -4,8 +4,8 @@
   const appScreen = document.getElementById("app");
   const btnStart = document.getElementById("btn-start");
   const setupStatus = document.getElementById("setup-status");
-  const folderInput = document.getElementById("folder-input");
   const introOverlay = document.getElementById("intro-overlay");
+  let userApiKey = "";
 
   // Draw the street scene behind the intro on load (called after PALETTES defined below)
 
@@ -158,40 +158,77 @@
     }
   }
 
-  btnStart.addEventListener("click", startSetup);
-  folderInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") startSetup();
-  });
+  // --- Browser-side file reading ---
+
+  function extractTitle(content, filename) {
+    // YAML frontmatter
+    const fm = content.match(/^---\s*\n([\s\S]*?)\n---/);
+    if (fm) {
+      for (const line of fm[1].split("\n")) {
+        if (line.startsWith("title:")) return line.split(":").slice(1).join(":").trim().replace(/^["']|["']$/g, "");
+      }
+    }
+    // First H1
+    const h1 = content.match(/^#\s+(.+)/m);
+    if (h1) return h1[1].trim();
+    return filename;
+  }
+
+  async function readNotesFromDirectory(dirHandle, basePath) {
+    const notes = [];
+    for await (const entry of dirHandle.values()) {
+      if (entry.kind === "file" && entry.name.endsWith(".md")) {
+        try {
+          const file = await entry.getFile();
+          const content = await file.text();
+          if (!content.trim()) continue;
+          const title = extractTitle(content, entry.name.replace(/\.md$/, ""));
+          notes.push({
+            id: notes.length,
+            title,
+            path: basePath + entry.name,
+            content,
+            preview: content.slice(0, 500),
+          });
+        } catch (e) { continue; }
+      } else if (entry.kind === "directory") {
+        const subNotes = await readNotesFromDirectory(entry, basePath + entry.name + "/");
+        for (const n of subNotes) { n.id = notes.length + subNotes.indexOf(n); notes.push(n); }
+      }
+    }
+    // Fix IDs
+    notes.forEach((n, i) => n.id = i);
+    return notes;
+  }
 
   document.getElementById("btn-browse").addEventListener("click", async () => {
     try {
-      const res = await fetch("/api/pick-folder", { method: "POST" });
-      const data = await res.json();
-      if (data.folder) folderInput.value = data.folder;
-    } catch (e) {}
+      const dirHandle = await window.showDirectoryPicker();
+      const folderStatus = document.getElementById("folder-status");
+      folderStatus.textContent = "Reading notes...";
+      const notes = await readNotesFromDirectory(dirHandle, "");
+      flaneurState.notes = notes;
+      folderStatus.textContent = `${notes.length} notes found.`;
+      if (notes.length > 0) btnStart.disabled = false;
+    } catch (e) {
+      if (e.name !== "AbortError") {
+        document.getElementById("folder-status").textContent = "Could not read folder.";
+      }
+    }
   });
 
-  async function startSetup() {
-    const folder = folderInput.value.trim();
-    if (!folder) { showStatus("Enter a folder path.", true); return; }
-    const apiKey = (document.getElementById("apikey-input") || {}).value || "";
+  btnStart.addEventListener("click", () => {
+    userApiKey = (document.getElementById("apikey-input") || {}).value || "";
+    if (!userApiKey) { showStatus("API key required.", true); return; }
+    if (flaneurState.notes.length === 0) { showStatus("Choose a folder first.", true); return; }
+    showStatus(`${flaneurState.notes.length} notes. Letting them out...`);
     btnStart.disabled = true;
-    showStatus("Reading your notes...");
-    try {
-      const res = await fetch("/api/setup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ folder, api_key: apiKey.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) { showStatus(data.error, true); btnStart.disabled = false; return; }
-      showStatus(`${data.note_count} notes found. Letting them out...`);
-      setTimeout(() => {
-        introOverlay.classList.add("hidden");
-        document.getElementById("controls").classList.remove("hidden");
-        launchStreet();
-      }, 800);
-    } catch (e) { showStatus("Failed to connect.", true); btnStart.disabled = false; }
+    setTimeout(() => {
+      introOverlay.classList.add("hidden");
+      document.getElementById("controls").classList.remove("hidden");
+      launchStreet();
+    }, 600);
+  });
   }
 
   function showStatus(msg, err) {
@@ -266,12 +303,6 @@
     document.getElementById("speed-control").classList.remove("hidden");
     updatePartyButton();
 
-    // Fetch notes once
-    if (flaneurState.notes.length === 0) {
-      const res = await fetch("/api/notes");
-      const { notes } = await res.json();
-      flaneurState.notes = notes;
-    }
     const notes = flaneurState.notes;
     if (notes.length === 0) return;
 
@@ -1234,14 +1265,20 @@
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 30000);
+        const noteA = flaneurState.notes[a.noteIdx];
+        const noteB = flaneurState.notes[b.noteIdx];
         const res = await fetch("/api/spark", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ a: a.noteIdx, b: b.noteIdx }),
+          headers: { "Content-Type": "application/json", "X-API-Key": userApiKey },
+          body: JSON.stringify({
+            a_title: noteA.title, a_content: (noteA.content || noteA.preview).slice(0, 1000),
+            b_title: noteB.title, b_content: (noteB.content || noteB.preview).slice(0, 1000),
+          }),
           signal: controller.signal,
         });
         clearTimeout(timeout);
         const data = await res.json();
+        if (data.error) throw new Error(data.error);
 
         // Pick a random conversational prefix
         const prefix = CONVERSATIONAL_PREFIXES[Math.floor(Math.random() * CONVERSATIONAL_PREFIXES.length)];
@@ -1927,11 +1964,14 @@
     async function triggerPartySpark(a, b) {
       sparkPending = true;
       try {
+        const noteA = flaneurState.notes[a.noteIdx] || {};
+        const noteB = flaneurState.notes[b.noteIdx] || {};
         const res = await fetch("/api/spark-evolve", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "X-API-Key": userApiKey },
           body: JSON.stringify({
-            a: a.noteIdx, b: b.noteIdx,
+            a_title: noteA.title, a_content: (noteA.content || noteA.preview || "").slice(0, 600),
+            b_title: noteB.title, b_content: (noteB.content || noteB.preview || "").slice(0, 600),
             context: {
               scene: "party",
               a_street_spark: a.streetSpark || {},
@@ -2330,11 +2370,14 @@
     // Trigger the deep conversation
     async function triggerCoffee() {
       try {
+        const noteA = flaneurState.notes[guestA.noteIdx] || {};
+        const noteB = flaneurState.notes[guestB.noteIdx] || {};
         const res = await fetch("/api/spark-evolve", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "X-API-Key": userApiKey },
           body: JSON.stringify({
-            a: guestA.noteIdx, b: guestB.noteIdx,
+            a_title: noteA.title, a_content: (noteA.content || noteA.preview || "").slice(0, 400),
+            b_title: noteB.title, b_content: (noteB.content || noteB.preview || "").slice(0, 400),
             context: {
               scene: "coffee",
               a_street_spark: guestA.streetSpark || {},

@@ -13,7 +13,7 @@ def create_app(vault_path: Path | None = None) -> Flask:
     static_dir = Path(__file__).parent / "static"
     app = Flask(__name__, static_folder=str(static_dir), static_url_path="")
 
-    state = {"vault_path": vault_path}
+    state = {"vault_path": vault_path, "api_key": None}
 
     @app.route("/")
     def index():
@@ -72,7 +72,9 @@ def create_app(vault_path: Path | None = None) -> Flask:
     def setup():
         body = request.get_json()
         folder = body.get("folder", "").strip()
-        api_key = body.get("api_key", "").strip() or os.environ.get("OPENAI_API_KEY")
+        user_api_key = body.get("api_key", "").strip()
+        if user_api_key:
+            state["api_key"] = user_api_key
 
         if not folder:
             return jsonify({"error": "Folder path is required."}), 400
@@ -159,11 +161,11 @@ def create_app(vault_path: Path | None = None) -> Flask:
         if path_b.exists():
             content_b = path_b.read_text(encoding="utf-8", errors="replace")[:2000]
 
-        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        api_key = state.get("api_key") or os.environ.get("ANTHROPIC_API_KEY")
         client = anthropic.Anthropic(api_key=api_key)
 
         response = client.messages.create(
-            model="claude-opus-4-6",
+            model="claude-sonnet-4-6",
             max_tokens=250,
             system=(
                 "You are a creative collision engine. Two unrelated ideas just met.\n\n"
@@ -246,7 +248,7 @@ def create_app(vault_path: Path | None = None) -> Flask:
         if path_b.exists():
             content_b = path_b.read_text(encoding="utf-8", errors="replace")[:2000]
 
-        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        api_key = state.get("api_key") or os.environ.get("ANTHROPIC_API_KEY")
         client = anthropic.Anthropic(api_key=api_key)
 
         if scene == "party":
@@ -313,8 +315,9 @@ def create_app(vault_path: Path | None = None) -> Flask:
                 "Over coffee, what final crystallized idea emerges from this entire journey?"
             )
 
+        model = "claude-opus-4-6" if scene == "coffee" else "claude-sonnet-4-6"
         response = client.messages.create(
-            model="claude-opus-4-6",
+            model=model,
             max_tokens=max_tok,
             system=system_prompt,
             messages=[{"role": "user", "content": user_msg}],

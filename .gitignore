@@ -10,3 +10,5 @@ venv/
 *.db
 .DS_Store
 .playwright-mcp/
+.vercel/
+node_modules/

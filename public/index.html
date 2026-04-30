@@ -7,11 +7,10 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <!-- Main app (always rendered, scene behind overlays) -->
     <div id="app">
         <canvas id="street-canvas"></canvas>
 
-        <!-- Intro/Setup overlay — the one and only entry screen -->
+        <!-- Intro/Setup overlay -->
         <div id="intro-overlay">
             <div id="intro-card">
                 <h1 class="intro-title">LET THEM OUT</h1>
@@ -31,15 +30,12 @@
                     </div>
                 </div>
                 <div class="intro-form">
-                    <label for="folder-input">WHERE ARE YOUR NOTES?</label>
-                    <div class="folder-row">
-                        <input type="text" id="folder-input" placeholder="~/Documents/MyVault" spellcheck="false">
-                        <button type="button" id="btn-browse" class="browse-btn">BROWSE</button>
-                    </div>
-                    <label for="apikey-input">ANTHROPIC API KEY</label>
+                    <label for="apikey-input">YOUR ANTHROPIC API KEY</label>
                     <input type="password" id="apikey-input" placeholder="sk-ant-..." spellcheck="false">
-                    <p class="apikey-hint">Leave blank if ANTHROPIC_API_KEY is set in your environment.</p>
-                    <button id="btn-start">LET THEM OUT</button>
+                    <p class="apikey-hint">Get one at console.anthropic.com — never stored, sent per-request only.</p>
+                    <button id="btn-browse" type="button">CHOOSE YOUR NOTES FOLDER</button>
+                    <p id="folder-status" class="setup-status"></p>
+                    <button id="btn-start" disabled>LET THEM OUT</button>
                     <p id="setup-status" class="setup-status"></p>
                 </div>
             </div>
@@ -69,7 +65,6 @@
             <button id="btn-music" class="scene-btn hidden" title="Toggle music">🔊</button>
             <button id="btn-back-street" class="scene-btn hidden">Back to Street</button>
         </div>
-        <!-- Coffee result overlay -->
         <div id="coffee-result" class="hidden">
             <div id="coffee-card">
                 <div class="coffee-label">Over coffee, they realised...</div>
