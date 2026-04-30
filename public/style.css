@@ -44,52 +44,53 @@ body {
 
 #intro-card {
     text-align: center;
-    padding: 40px 48px;
+    padding: 24px 36px;
     background: rgba(10, 15, 30, 0.65);
     backdrop-filter: blur(3px);
     border: 2px solid rgba(255, 255, 255, 0.15);
     max-width: 560px;
     width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .intro-title {
     font-family: 'Courier New', monospace;
-    font-size: 38px;
+    font-size: 32px;
     font-weight: 700;
     color: #fff;
     letter-spacing: 0.15em;
-    margin-bottom: 12px;
+    margin-bottom: 4px;
     text-shadow: 3px 3px 0 rgba(0,0,0,0.4);
     white-space: nowrap;
 }
 
 .intro-pitch {
-    font-size: 15px;
-    line-height: 1.6;
+    font-size: 12px;
+    line-height: 1.5;
     color: rgba(255,255,255,0.85);
-    margin-bottom: 24px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    margin-bottom: 10px;
 }
 
 .intro-steps {
     display: flex;
-    gap: 10px;
-    margin-bottom: 24px;
+    gap: 6px;
+    margin-bottom: 10px;
 }
 
 .intro-step {
     flex: 1;
     display: flex;
     align-items: flex-start;
-    gap: 10px;
-    padding: 12px;
+    gap: 6px;
+    padding: 8px;
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .step-num {
     font-family: 'Courier New', monospace;
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 700;
     color: #fff;
     line-height: 1;
@@ -125,13 +126,13 @@ body {
 .sample-btn {
     width: 100%;
     font-family: 'Courier New', monospace;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.1em;
     color: #fff;
     background: rgba(255, 215, 0, 0.2);
     border: 2px solid rgba(255, 215, 0, 0.5);
-    padding: 16px 24px;
+    padding: 12px 20px;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -153,7 +154,7 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin: 12px 0;
+    margin: 8px 0;
 }
 
 .intro-divider::before,
@@ -174,7 +175,7 @@ body {
 
 .drop-zone {
     border: 2px dashed rgba(255, 255, 255, 0.3);
-    padding: 24px 16px;
+    padding: 14px 12px;
     text-align: center;
     transition: all 0.2s;
     cursor: pointer;
@@ -193,10 +194,10 @@ body {
 
 .drop-text {
     font-family: 'Courier New', monospace;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
     color: #fff;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .drop-hint {
@@ -280,13 +281,13 @@ body {
 }
 
 #btn-start {
-    margin-top: 8px;
+    margin-top: 6px;
     background: rgba(255, 255, 255, 0.12);
     color: #fff;
     border: 2px solid rgba(255, 255, 255, 0.3);
-    padding: 16px 24px;
+    padding: 12px 20px;
     font-family: 'Courier New', monospace;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.12em;
     cursor: pointer;
